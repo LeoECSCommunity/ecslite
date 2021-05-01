@@ -53,10 +53,10 @@ If you can't / don't want to use unity modules, code can be downloaded as source
 int entity = _world.NewEntity ();
 
 // Any entity can be destroyed. All component will be removed first, then entity will be destroyed. 
-world.DelEntity(entity);
+world.DelEntity (entity);
 ```
 
-> **Important!** Entities without components on them will be automatically removed on last `EcsEntity.Del()` call.
+> **Important!** Entities can't live without components and will be killed automatically after last component removement.
 
 ## Component
 Container for user data without / with small logic inside:
@@ -132,24 +132,21 @@ pool.Del (entity);
 Container for keeping filtered entities with specified component list:
 ```csharp
 class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
-    // auto-injected field: EcsWorld instance
-    EcsWorld _world = null;
-    
-    EcsPool<Weapon> weapons = null;
-    
+    EcsPool<Weapon> _weapons = null;    
     EcsFilter  _filter = null;
 
     public void Init (EcsSystems systems) {
-        // We wants to cache pool for Weapon components for later use
-        weapons = _world.GetPool<Weapon>();
+        var world = systems.GetWorld ();
+        // We wants to cache pool for Weapon components for later use.
+        _weapons = world.GetPool<Weapon>();
         
         // We wants to get entities with "Weapon" and without "Health".
         // Better to cache filter somehow.
-        _filter = EcsFilter.New (systems.GetWorld ()).Inc<Weapon> ().Exc<Health> ().End ();
+        _filter = EcsFilter.New (world).Inc<Weapon> ().Exc<Health> ().End ();
         
         // creating test entity.
         int entity = _world.NewEntity ();
-        weapons.Add(entity);
+        _weapons.Add (entity);
     }
 
     public void Run (EcsSystems systems) {
@@ -185,14 +182,20 @@ class Startup : MonoBehaviour {
     
     void Update () {
         // process all dependent systems.
-        _systems.Run ();
+        _systems?.Run ();
     }
 
     void OnDestroy () {
         // destroy systems logical group.
-        _systems?.Destroy ();
+        if (_systems != null) {
+            _systems.Destroy ();
+            _systems = null;
+        }
         // destroy world.
-        _world?.Destroy ();
+        if (_world != null) {
+            _world.Destroy ();
+            _world = null;
+        }
     }
 }
 ```
