@@ -290,6 +290,23 @@ void FixedUpdate () {
 }
 ```
 
+### I copy&paste my reset components code again and again. How I can do it in other manner?
+
+If you want to simplify your code and keep reset/init code at one place, you can setup custom handler to process cleanup / initialization for component:
+```csharp
+struct MyComponent : IEcsAutoReset<MyComponent> {
+    public int Id;
+    public object LinkToAnotherComponent;
+
+    public void AutoReset (ref MyComponent c) {
+        c.Id = 2;
+        c.LinkToAnotherComponent = null;
+    }
+}
+```
+This method will be automatically called for brand new component instance and after component removing from entity and before recycling to component pool.
+> Important: With custom `AutoReset` behaviour there are no any additional checks for reference-type fields, you should provide correct cleanup/init behaviour without possible memory leaks.
+
 ### I use components as events that works only one frame, then remove it at last system in execution sequence. It's boring, how I can automate it?
 
 If you want to remove one-frame components without additional custom code, you can register them at `EcsSystems`:
