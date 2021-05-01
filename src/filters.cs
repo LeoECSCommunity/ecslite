@@ -54,8 +54,8 @@ namespace Leopotam.EcsLite {
             var poolId = _world.GetPool<T> ().GetId ();
 #if DEBUG
             if (_built) { throw new Exception ("Cant change built mask."); }
-            if (Array.IndexOf (Include, poolId) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
-            if (Array.IndexOf (Exclude, poolId) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
+            if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
+            if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
 #endif
             if (IncludeCount == Include.Length) { Array.Resize (ref Include, IncludeCount << 1); }
             Include[IncludeCount++] = poolId;
@@ -67,8 +67,8 @@ namespace Leopotam.EcsLite {
             var poolId = _world.GetPool<T> ().GetId ();
 #if DEBUG
             if (_built) { throw new Exception ("Cant change built mask."); }
-            if (Array.IndexOf (Include, poolId) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
-            if (Array.IndexOf (Exclude, poolId) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
+            if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
+            if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
 #endif
             if (ExcludeCount == Exclude.Length) { Array.Resize (ref Exclude, ExcludeCount << 1); }
             Exclude[ExcludeCount++] = poolId;
