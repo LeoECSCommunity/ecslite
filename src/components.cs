@@ -16,6 +16,15 @@ namespace Leopotam.EcsLite {
         void Resize (int capacity);
         bool Has (int entity);
         void Del (int entity);
+        void InitAutoReset (int entity);
+    }
+
+    /// <summary>
+    /// Marks component type for custom reset behaviour.
+    /// </summary>
+    /// <typeparam name="T">Type of component, should be the same as main component!</typeparam>
+    public interface IEcsAutoReset<T> where T : struct {
+        void AutoReset (ref T c);
     }
 
 #if ENABLE_IL2CPP
@@ -25,12 +34,40 @@ namespace Leopotam.EcsLite {
     public sealed class EcsPool<T> : IEcsPool where T : struct {
         readonly EcsWorld _world;
         readonly int _id;
+        readonly AutoResetHandler _autoReset;
         PoolItem[] _items;
+#if ENABLE_IL2CPP && !UNITY_EDITOR
+        T _autoresetFakeInstance;
+#endif
 
         internal EcsPool (EcsWorld world, int id, int capacity) {
             _world = world;
             _id = id;
             _items = new PoolItem[capacity];
+            var type = typeof (T);
+            var isAutoReset = typeof (IEcsAutoReset<T>).IsAssignableFrom (type);
+#if DEBUG
+            if (!isAutoReset && type.GetInterface ("IEcsAutoReset`1") != null) {
+                throw new Exception ($"IEcsAutoReset should have <{typeof (T).Name}> constraint for component \"{typeof (T).Name}\".");
+            }
+#endif
+            if (isAutoReset) {
+                var autoResetMethod = typeof (T).GetMethod (nameof (IEcsAutoReset<T>.AutoReset));
+#if DEBUG
+                if (autoResetMethod == null) {
+                    throw new Exception (
+                        $"IEcsAutoReset<{typeof (T).Name}> explicit implementation not supported, use implicit instead.");
+                }
+#endif
+                _autoReset = (AutoResetHandler) Delegate.CreateDelegate (
+                    typeof (AutoResetHandler),
+#if ENABLE_IL2CPP && !UNITY_EDITOR
+                    _autoresetFakeInstance,
+#else
+                    null,
+#endif
+                    autoResetMethod);
+            }
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
@@ -40,6 +77,10 @@ namespace Leopotam.EcsLite {
 
         void IEcsPool.Resize (int capacity) {
             Array.Resize (ref _items, capacity);
+        }
+
+        void IEcsPool.InitAutoReset (int entity) {
+            _autoReset?.Invoke (ref _items[entity].Data);
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
@@ -87,7 +128,11 @@ namespace Leopotam.EcsLite {
             if (itemData.Attached) {
                 _world.OnEntityChange (entity, _id, false);
                 itemData.Attached = false;
-                itemData.Data = default;
+                if (_autoReset != null) {
+                    _autoReset.Invoke (ref _items[entity].Data);
+                } else {
+                    itemData.Data = default;
+                }
                 ref var entityData = ref _world.Entities[entity];
                 entityData.ComponentsCount--;
                 if (entityData.ComponentsCount == 0) {
@@ -100,5 +145,7 @@ namespace Leopotam.EcsLite {
             public bool Attached;
             public T Data;
         }
+
+        delegate void AutoResetHandler (ref T component);
     }
 }

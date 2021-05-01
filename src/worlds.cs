@@ -51,6 +51,12 @@ namespace Leopotam.EcsLite {
         public void Destroy () {
             _destroyed = true;
             // FIXME: remove all entities.
+            for (var i = _entitiesCount - 1; i >= 0; i--) {
+                ref var entityData = ref Entities[i];
+                if (entityData.ComponentsCount > 0) {
+                    DelEntity (i);
+                }
+            }
             _pools = Array.Empty<IEcsPool> ();
             _poolHashes.Clear ();
             _filters.Clear ();
@@ -63,7 +69,6 @@ namespace Leopotam.EcsLite {
             return !_destroyed;
         }
 
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public int NewEntity () {
             int entity;
             if (_recycledEntitiesCount > 0) {
@@ -82,26 +87,37 @@ namespace Leopotam.EcsLite {
                 }
                 entity = _entitiesCount++;
                 Entities[entity].Gen = 1;
+                for (int i = 0, iMax = _poolsCount; i < iMax; i++) {
+                    _pools[i].InitAutoReset (entity);
+                }
             }
             return entity;
         }
 
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public void DelEntity (int entity) {
+#if DEBUG
+            if (entity < 0 || entity >= _entitiesCount) { throw new Exception ("Cant touch destroyed entity."); }
+#endif
             ref var entityData = ref Entities[entity];
-            var idx = 0;
+            if (entityData.Gen < 0) {
+                return;
+            }
             // kill components.
-            while (entityData.ComponentsCount > 0 && idx < _poolsCount) {
-                for (; idx < _poolsCount; idx++) {
-                    if (_pools[idx].Has (entity)) {
-                        _pools[idx++].Del (entity);
-                        break;
+            if (entityData.ComponentsCount > 0) {
+                var idx = 0;
+                while (entityData.ComponentsCount > 0 && idx < _poolsCount) {
+                    for (; idx < _poolsCount; idx++) {
+                        if (_pools[idx].Has (entity)) {
+                            _pools[idx++].Del (entity);
+                            break;
+                        }
                     }
                 }
-            }
 #if DEBUG
-            if (entityData.ComponentsCount != 0) { throw new Exception ($"invalid components count on entity {entity} => {entityData.ComponentsCount}"); }
+                if (entityData.ComponentsCount != 0) { throw new Exception ($"invalid components count on entity {entity} => {entityData.ComponentsCount}"); }
 #endif
+                return;
+            }
             entityData.Gen = (short) (entityData.Gen == short.MaxValue ? -1 : -(entityData.Gen + 1));
             if (_recycledEntitiesCount == _recycledEntities.Length) {
                 Array.Resize (ref _recycledEntities, _recycledEntitiesCount << 1);
@@ -139,6 +155,22 @@ namespace Leopotam.EcsLite {
             }
             _pools[_poolsCount++] = pool;
             return pool;
+        }
+
+        public int GetAllEntities (ref int[] entities) {
+            var count = _entitiesCount - _recycledEntitiesCount;
+            if (entities == null || entities.Length < count) {
+                entities = new int[count];
+            }
+            var id = 0;
+            for (int i = 0, iMax = _entitiesCount; i < iMax; i++) {
+                ref var entityData = ref Entities[i];
+                // should we skip empty entities here?
+                if (entityData.ComponentsCount >= 0) {
+                    entities[id++] = i;
+                }
+            }
+            return count;
         }
 
         internal (EcsFilter, bool) GetFilter (EcsFilterMask mask, int capacity = 512) {
