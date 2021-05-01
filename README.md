@@ -226,15 +226,16 @@ class EcsStartup {
         _systems = new EcsSystems (_world);
         _systems
             // register additional worlds here.
-            // .AddWorld (customWorldInstance)
+            // .AddWorld (customWorldInstance, "events")
             // register your systems here, for example:
             // .Add (new TestSystem1 ())
             // .Add (new TestSystem2 ())
             
             // register components for removing here
-            // (position in registration is important), for example:
-            // .KillHere<TestComponent1> ()
-            // .KillHere<TestComponent2> ()
+            // position in registration is important,
+            // should be after all AddWorld() registration, for example:
+            // .DelHere<TestComponent1> ()
+            // .DelHere<TestComponent2> ("events")
             
             .Init ();
     }
@@ -261,7 +262,7 @@ class EcsStartup {
 # License
 The software released under the terms of the [MIT license](./LICENSE.md).
 
-No personal support or any guarantees. 
+No personal support or any guarantees.
 
 # FAQ
 
@@ -303,7 +304,7 @@ void Start () {
     _update
         .Add (new CalculateSystem ())
         .Add (new UpdateSystem ())
-        .KillHere<MyOneFrameComponent> ()
+        .DelHere<MyOneFrameComponent> ()
         .Init ();
 }
 
@@ -312,4 +313,5 @@ void Update () {
 }
 ```
 
-> Important: All one-frame components with specified type will be removed at position in execution flow where this component was registered with KillHere() call.
+> important: All one-frame components should be registered with `DelHere()` after all worlds registration through `AddWorld()`.
+> Important: All one-frame components with specified type will be removed at position in execution flow where this component was registered with `DelHere()` call.

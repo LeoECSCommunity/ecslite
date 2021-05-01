@@ -106,8 +106,8 @@ namespace Leopotam.EcsLite {
             }
         }
 
-        public EcsSystems KillHere<T> (EcsWorld world) where T : struct {
-            return Add (new KillHereSystem<T> (world));
+        public EcsSystems DelHere<T> (string worldName = null) where T : struct {
+            return Add (new DelHereSystem<T> (GetWorld (worldName)));
         }
     }
 
@@ -115,11 +115,11 @@ namespace Leopotam.EcsLite {
     [Il2CppSetOption (Option.NullChecks, false)]
     [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
 #endif
-    sealed class KillHereSystem<T> : IEcsRunSystem where T : struct {
+    sealed class DelHereSystem<T> : IEcsRunSystem where T : struct {
         readonly EcsFilter _filter;
         readonly EcsPool<T> _pool;
 
-        public KillHereSystem (EcsWorld world) {
+        public DelHereSystem (EcsWorld world) {
             _filter = EcsFilterMask.New (world).Inc<T> ().End ();
             _pool = world.GetPool<T> ();
         }
