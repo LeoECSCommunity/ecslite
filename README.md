@@ -93,16 +93,16 @@ class SharedData {
     public string PrefabsPath;
 }
 ...
-var sharedData = new SharedData { PrefabsPath = "Items/{0}" };
-var systems = new EcsSystems (world, sharedData);
+SharedData sharedData = new SharedData { PrefabsPath = "Items/{0}" };
+EcsSystems systems = new EcsSystems (world, sharedData);
 systems
     .Add (new TestSystem1 ())
     .Init ();
 ...
 class TestSystem1 : IEcsInitSystem {
     public void Init(EcsSystems systems) {
-        var shared = systems.GetShared<SharedData> (); 
-        var prefabPath = string.Format (shared.PrefabsPath, 123);
+        SharedData shared = systems.GetShared<SharedData> (); 
+        string prefabPath = string.Format (shared.PrefabsPath, 123);
         // prefabPath = "Items/123" here.
     } 
 }
@@ -136,7 +136,7 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
     EcsFilter  _filter = null;
 
     public void Init (EcsSystems systems) {
-        var world = systems.GetWorld ();
+        EcsWorld world = systems.GetWorld ();
         // We wants to cache pool for Weapon components for later use.
         _weapons = world.GetPool<Weapon>();
         
@@ -274,7 +274,7 @@ EcsSystems _update;
 EcsSystems _fixedUpdate;
 
 void Start () {
-    var world = new EcsWorld ();
+    EcsWorld world = new EcsWorld ();
     _update = new EcsSystems (world).Add (new UpdateSystem ());
     _update.Init ();
     _fixedUpdate = new EcsSystems (world).Add (new FixedUpdateSystem ());
@@ -316,7 +316,7 @@ struct MyOneFrameComponent { }
 EcsSystems _update;
 
 void Start () {
-    var world = new EcsWorld ();
+    EcsWorld world = new EcsWorld ();
     _update = new EcsSystems (world);
     _update
         .Add (new CalculateSystem ())
