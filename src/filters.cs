@@ -17,112 +17,9 @@ namespace Leopotam.EcsLite {
     [Il2CppSetOption (Option.NullChecks, false)]
     [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
 #endif
-    public sealed class EcsFilterMask {
-        EcsWorld _world;
-        internal int[] Include;
-        internal int[] Exclude;
-        internal int IncludeCount;
-        internal int ExcludeCount;
-        internal int Hash;
-
-        static readonly object SyncObj = new object ();
-        static EcsFilterMask[] _pool = new EcsFilterMask[32];
-        static int _poolCount;
-#if DEBUG
-        bool _built;
-#endif
-
-        EcsFilterMask () {
-            Include = new int[8];
-            Exclude = new int[2];
-            Reset ();
-        }
-
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        void Reset () {
-            _world = null;
-            IncludeCount = 0;
-            ExcludeCount = 0;
-            Hash = 0;
-#if DEBUG
-            _built = false;
-#endif
-        }
-
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public EcsFilterMask Inc<T> () where T : struct {
-            var poolId = _world.GetPool<T> ().GetId ();
-#if DEBUG
-            if (_built) { throw new Exception ("Cant change built mask."); }
-            if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
-            if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
-#endif
-            if (IncludeCount == Include.Length) { Array.Resize (ref Include, IncludeCount << 1); }
-            Include[IncludeCount++] = poolId;
-            return this;
-        }
-
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public EcsFilterMask Exc<T> () where T : struct {
-            var poolId = _world.GetPool<T> ().GetId ();
-#if DEBUG
-            if (_built) { throw new Exception ("Cant change built mask."); }
-            if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
-            if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
-#endif
-            if (ExcludeCount == Exclude.Length) { Array.Resize (ref Exclude, ExcludeCount << 1); }
-            Exclude[ExcludeCount++] = poolId;
-            return this;
-        }
-
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public EcsFilter End (int capacity = 512) {
-#if DEBUG
-            if (_built) { throw new Exception ("Cant change built mask."); }
-            if (IncludeCount < 1) { throw new Exception ("Filter should contains at least one include constraint."); }
-            _built = true;
-#endif
-            Array.Sort (Include, 0, IncludeCount);
-            Array.Sort (Exclude, 0, ExcludeCount);
-            // calculate hash.
-            Hash = IncludeCount + ExcludeCount;
-            for (int i = 0, iMax = IncludeCount; i < iMax; i++) {
-                Hash = unchecked (Hash * 314159 + Include[i]);
-            }
-            for (int i = 0, iMax = ExcludeCount; i < iMax; i++) {
-                Hash = unchecked (Hash * 314159 - Exclude[i]);
-            }
-            var (filter, isNew) = _world.GetFilterInternal (this, capacity);
-            if (!isNew) { Recycle (); }
-            return filter;
-        }
-
-        void Recycle () {
-            Reset ();
-            lock (SyncObj) {
-                if (_poolCount == _pool.Length) {
-                    Array.Resize (ref _pool, _poolCount << 1);
-                }
-                _pool[_poolCount++] = this;
-            }
-        }
-
-        internal static EcsFilterMask New (EcsWorld world) {
-            lock (SyncObj) {
-                var mask = _poolCount > 0 ? _pool[--_poolCount] : new EcsFilterMask ();
-                mask._world = world;
-                return mask;
-            }
-        }
-    }
-
-#if ENABLE_IL2CPP
-    [Il2CppSetOption (Option.NullChecks, false)]
-    [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
-#endif
     public sealed class EcsFilter {
         readonly EcsWorld _world;
-        readonly EcsFilterMask _mask;
+        readonly Mask _mask;
         int[] _entities;
         int _entitiesCount;
         internal readonly Dictionary<int, int> EntitiesMap;
@@ -130,7 +27,7 @@ namespace Leopotam.EcsLite {
         DelayedOp[] _delayedOps;
         int _delayedOpsCount;
 
-        internal EcsFilter (EcsWorld world, EcsFilterMask mask, int capacity = 512) {
+        internal EcsFilter (EcsWorld world, Mask mask, int capacity = 512) {
             _world = world;
             _mask = mask;
             _entities = new int[capacity];
@@ -158,7 +55,7 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        internal EcsFilterMask GetMask () {
+        internal Mask GetMask () {
             return _mask;
         }
 
@@ -243,6 +140,109 @@ namespace Leopotam.EcsLite {
             [MethodImpl (MethodImplOptions.AggressiveInlining)]
             public void Dispose () {
                 _filter.Unlock ();
+            }
+        }
+
+#if ENABLE_IL2CPP
+    [Il2CppSetOption (Option.NullChecks, false)]
+    [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
+#endif
+        public sealed class Mask {
+            EcsWorld _world;
+            internal int[] Include;
+            internal int[] Exclude;
+            internal int IncludeCount;
+            internal int ExcludeCount;
+            internal int Hash;
+
+            static readonly object SyncObj = new object ();
+            static Mask[] _pool = new Mask[32];
+            static int _poolCount;
+#if DEBUG
+            bool _built;
+#endif
+
+            Mask () {
+                Include = new int[8];
+                Exclude = new int[2];
+                Reset ();
+            }
+
+            [MethodImpl (MethodImplOptions.AggressiveInlining)]
+            void Reset () {
+                _world = null;
+                IncludeCount = 0;
+                ExcludeCount = 0;
+                Hash = 0;
+#if DEBUG
+                _built = false;
+#endif
+            }
+
+            [MethodImpl (MethodImplOptions.AggressiveInlining)]
+            public Mask Inc<T> () where T : struct {
+                var poolId = _world.GetPool<T> ().GetId ();
+#if DEBUG
+                if (_built) { throw new Exception ("Cant change built mask."); }
+                if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
+                if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
+#endif
+                if (IncludeCount == Include.Length) { Array.Resize (ref Include, IncludeCount << 1); }
+                Include[IncludeCount++] = poolId;
+                return this;
+            }
+
+            [MethodImpl (MethodImplOptions.AggressiveInlining)]
+            public Mask Exc<T> () where T : struct {
+                var poolId = _world.GetPool<T> ().GetId ();
+#if DEBUG
+                if (_built) { throw new Exception ("Cant change built mask."); }
+                if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
+                if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
+#endif
+                if (ExcludeCount == Exclude.Length) { Array.Resize (ref Exclude, ExcludeCount << 1); }
+                Exclude[ExcludeCount++] = poolId;
+                return this;
+            }
+
+            [MethodImpl (MethodImplOptions.AggressiveInlining)]
+            public EcsFilter End (int capacity = 512) {
+#if DEBUG
+                if (_built) { throw new Exception ("Cant change built mask."); }
+                if (IncludeCount < 1) { throw new Exception ("Filter should contains at least one include constraint."); }
+                _built = true;
+#endif
+                Array.Sort (Include, 0, IncludeCount);
+                Array.Sort (Exclude, 0, ExcludeCount);
+                // calculate hash.
+                Hash = IncludeCount + ExcludeCount;
+                for (int i = 0, iMax = IncludeCount; i < iMax; i++) {
+                    Hash = unchecked (Hash * 314159 + Include[i]);
+                }
+                for (int i = 0, iMax = ExcludeCount; i < iMax; i++) {
+                    Hash = unchecked (Hash * 314159 - Exclude[i]);
+                }
+                var (filter, isNew) = _world.GetFilterInternal (this, capacity);
+                if (!isNew) { Recycle (); }
+                return filter;
+            }
+
+            void Recycle () {
+                Reset ();
+                lock (SyncObj) {
+                    if (_poolCount == _pool.Length) {
+                        Array.Resize (ref _pool, _poolCount << 1);
+                    }
+                    _pool[_poolCount++] = this;
+                }
+            }
+
+            internal static Mask New (EcsWorld world) {
+                lock (SyncObj) {
+                    var mask = _poolCount > 0 ? _pool[--_poolCount] : new Mask ();
+                    mask._world = world;
+                    return mask;
+                }
             }
         }
 

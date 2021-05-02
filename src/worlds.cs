@@ -18,11 +18,6 @@ namespace Leopotam.EcsLite {
     [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
 #endif
     public sealed class EcsWorld {
-        internal struct EntityData {
-            public short Gen;
-            public short ComponentsCount;
-        }
-
         internal EntityData[] Entities;
         int _entitiesCount;
         int[] _recycledEntities;
@@ -35,16 +30,24 @@ namespace Leopotam.EcsLite {
         List<EcsFilter>[] _filtersByExcludedComponents;
         bool _destroyed;
 
-        public EcsWorld (int capacity = 512) {
+        public EcsWorld (in Config cfg = default) {
+            // entities.
+            var capacity = cfg.Entities > 0 ? cfg.Entities : Config.EntitiesDefault;
             Entities = new EntityData[capacity];
+            capacity = cfg.RecycledEntities > 0 ? cfg.RecycledEntities : Config.RecycledEntitiesDefault;
+            _recycledEntities = new int[capacity];
             _entitiesCount = 0;
-            _recycledEntities = new int[512];
-            _filters = new Dictionary<int, EcsFilter> (512);
-            _pools = new IEcsPool[512];
+            _recycledEntitiesCount = 0;
+            // pools.
+            capacity = cfg.Pools > 0 ? cfg.Pools : Config.PoolsDefault;
+            _pools = new IEcsPool[capacity];
+            _poolHashes = new Dictionary<Type, IEcsPool> (capacity);
+            _filtersByIncludedComponents = new List<EcsFilter>[capacity];
+            _filtersByExcludedComponents = new List<EcsFilter>[capacity];
             _poolsCount = 0;
-            _poolHashes = new Dictionary<Type, IEcsPool> (512);
-            _filtersByIncludedComponents = new List<EcsFilter>[512];
-            _filtersByExcludedComponents = new List<EcsFilter>[512];
+            // filters.
+            capacity = cfg.Filters > 0 ? cfg.Filters : Config.FiltersDefault;
+            _filters = new Dictionary<int, EcsFilter> (capacity);
             _destroyed = false;
         }
 
@@ -174,11 +177,11 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public EcsFilterMask GetFilter () {
-            return EcsFilterMask.New (this);
+        public EcsFilter.Mask GetFilter () {
+            return EcsFilter.Mask.New (this);
         }
 
-        internal (EcsFilter, bool) GetFilterInternal (EcsFilterMask mask, int capacity = 512) {
+        internal (EcsFilter, bool) GetFilterInternal (EcsFilter.Mask mask, int capacity = 512) {
             var hash = mask.Hash;
             var exists = _filters.TryGetValue (hash, out var filter);
             if (exists) { return (filter, false); }
@@ -262,7 +265,7 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        bool IsMaskCompatible (EcsFilterMask filterMask, int entity) {
+        bool IsMaskCompatible (EcsFilter.Mask filterMask, int entity) {
             for (int i = 0, iMax = filterMask.IncludeCount; i < iMax; i++) {
                 if (!_pools[filterMask.Include[i]].Has (entity)) {
                     return false;
@@ -277,7 +280,7 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        bool IsMaskCompatibleWithout (EcsFilterMask filterMask, int entity, int componentId) {
+        bool IsMaskCompatibleWithout (EcsFilter.Mask filterMask, int entity, int componentId) {
             for (int i = 0, iMax = filterMask.IncludeCount; i < iMax; i++) {
                 var typeId = filterMask.Include[i];
                 if (typeId == componentId || !_pools[typeId].Has (entity)) {
@@ -291,6 +294,23 @@ namespace Leopotam.EcsLite {
                 }
             }
             return true;
+        }
+
+        public struct Config {
+            public int Entities;
+            public int RecycledEntities;
+            public int Pools;
+            public int Filters;
+
+            internal const int EntitiesDefault = 512;
+            internal const int RecycledEntitiesDefault = 512;
+            internal const int PoolsDefault = 512;
+            internal const int FiltersDefault = 512;
+        }
+
+        internal struct EntityData {
+            public short Gen;
+            public short ComponentsCount;
         }
     }
 }
