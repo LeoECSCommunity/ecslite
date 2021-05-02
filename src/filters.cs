@@ -85,7 +85,7 @@ namespace Leopotam.EcsLite {
             Array.Sort (Include, 0, IncludeCount);
             Array.Sort (Exclude, 0, ExcludeCount);
             Hash = CalculateHash ();
-            var (filter, isNew) = _world.GetFilter (this, capacity);
+            var (filter, isNew) = _world.GetFilterInternal (this, capacity);
             if (!isNew) { Recycle (); }
             return filter;
         }
@@ -189,11 +189,6 @@ namespace Leopotam.EcsLite {
                 _entities[idx] = _entities[_entitiesCount];
                 EntitiesMap[_entities[idx]] = idx;
             }
-        }
-
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public static EcsFilterMask New (EcsWorld world) {
-            return EcsFilterMask.New (world);
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]

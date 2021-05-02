@@ -173,7 +173,12 @@ namespace Leopotam.EcsLite {
             return count;
         }
 
-        internal (EcsFilter, bool) GetFilter (EcsFilterMask mask, int capacity = 512) {
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public EcsFilterMask GetFilter () {
+            return EcsFilterMask.New (this);
+        }
+
+        internal (EcsFilter, bool) GetFilterInternal (EcsFilterMask mask, int capacity = 512) {
             var hash = mask.Hash;
             var exists = _filters.TryGetValue (hash, out var filter);
             if (exists) { return (filter, false); }
