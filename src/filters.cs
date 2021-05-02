@@ -84,7 +84,14 @@ namespace Leopotam.EcsLite {
 #endif
             Array.Sort (Include, 0, IncludeCount);
             Array.Sort (Exclude, 0, ExcludeCount);
-            Hash = CalculateHash ();
+            // calculate hash.
+            Hash = IncludeCount + ExcludeCount;
+            for (int i = 0, iMax = IncludeCount; i < iMax; i++) {
+                Hash = unchecked (Hash * 314159 + Include[i]);
+            }
+            for (int i = 0, iMax = ExcludeCount; i < iMax; i++) {
+                Hash = unchecked (Hash * 314159 - Exclude[i]);
+            }
             var (filter, isNew) = _world.GetFilterInternal (this, capacity);
             if (!isNew) { Recycle (); }
             return filter;
@@ -97,20 +104,6 @@ namespace Leopotam.EcsLite {
                     Array.Resize (ref _pool, _poolCount << 1);
                 }
                 _pool[_poolCount++] = this;
-            }
-        }
-
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        int CalculateHash () {
-            unchecked {
-                var hash = 17;
-                for (int i = 0, iMax = IncludeCount; i < iMax; i++) {
-                    hash = 31 * hash + Include[i];
-                }
-                for (int i = 0, iMax = ExcludeCount; i < iMax; i++) {
-                    hash = 31 * hash + Exclude[i];
-                }
-                return hash;
             }
         }
 
