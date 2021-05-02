@@ -3,7 +3,7 @@ Performance, zero/small memory allocations/footprint, no dependencies on any gam
 
 > **Important!** Don't forget to use `DEBUG` builds for development and `RELEASE` builds in production: all internal error checks / exception throwing works only in `DEBUG` builds and eleminated for performance reasons in `RELEASE`.
 
-> **Important!** LeoEcsLite API **not tread safe** and will never be! If you need multithread-processing - you should implement it on your side as part of ecs-system.
+> **Important!** LeoEcsLite API **is not tread safe** and will never be! If you need multithread-processing - you should implement it on your side as part of ecs-system.
 
 # Table of content
 * [Socials](#socials)
@@ -52,7 +52,7 @@ If you can't / don't want to use unity modules, code can be downloaded as source
 // Creates new entity in world context.
 int entity = _world.NewEntity ();
 
-// Any entity can be destroyed. All component will be removed first, then entity will be destroyed. 
+// Any entity can be destroyed. All components will be removed first, then entity will be destroyed. 
 world.DelEntity (entity);
 ```
 
@@ -69,7 +69,7 @@ struct Component1 {
 Components can be added / requested / removed through [component pools](#ecspool).
 
 ## System
-Сontainer for logic for processing filtered entities. User class should implements `IEcsInitSystem`, `IEcsDestroySystem`, `IEcsRunSystem` (or other supported) interfaces:
+Сontainer for logic for processing filtered entities. User class should implement `IEcsInitSystem`, `IEcsDestroySystem`, `IEcsRunSystem` (or other supported) interfaces:
 ```csharp
 class UserSystem : IEcsInitSystem, IEcsRunSystem, IEcsDestroySystem {
     public void Init (EcsSystems systems) {
@@ -119,7 +119,7 @@ EcsPool<Component1> pool = world.GetPool<Component1> ();
 // Add() adds component to entity. If component already exists - exception will be raised in DEBUG.
 ref Component1 c1 = ref pool.Add (entity);
 
-// Get() returns exist component on entity. If component not exists - exception will be raised in DEBUG.
+// Get() returns exist component on entity. If component does not exists - exception will be raised in DEBUG.
 ref Component1 c1 = ref pool.Get (entity);
 
 // Del() removes component from entity. If it was last component - entity will be removed automatically too.
@@ -137,10 +137,10 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
 
     public void Init (EcsSystems systems) {
         EcsWorld world = systems.GetWorld ();
-        // We wants to cache pool for Weapon components for later use.
+        // We want to cache pool for Weapon components for later use.
         _weapons = world.GetPool<Weapon>();
         
-        // We wants to get entities with "Weapon" and without "Health".
+        // We want to get entities with "Weapon" and without "Health".
         // Better to cache filter somehow.
         _filter = world.GetFilter ().Inc<Weapon> ().Exc<Health> ().End ();
         
@@ -158,12 +158,12 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
 }
 ```
 
-> Important: Any filter supports any amount of components, include and exclude list can't intersects and should be unique.
+> Important: Any filter supports any amount of components, include and exclude lists can't intersect and should be unique.
 
 ## EcsWorld
 Root level container for all entities / components, works like isolated environment.
 
-> Important: Do not forget to call `EcsWorld.Destroy()` method when instance will not be used anymore.
+> Important: Do not forget to call `EcsWorld.Destroy()` method if instance will not be used anymore.
 
 ## EcsSystems
 Group of systems to process `EcsWorld` instance:
@@ -200,12 +200,12 @@ class Startup : MonoBehaviour {
 }
 ```
 
-> Important: Do not forget to call `EcsSystems.Destroy()` method when instance will not be used anymore.
+> Important: Do not forget to call `EcsSystems.Destroy()` method if instance will not be used anymore.
 
 # Engine integration
 
 ## Unity
-> Tested on unity 2020.3 (not dependent on it) and contains assembly definition for compiling to separate assembly file for performance reason.
+> Tested on unity 2020.3 (but not dependent on it) and contains assembly definition for compiling to separate assembly file for performance reason.
 
 Not ready yet.
 
@@ -260,13 +260,13 @@ class EcsStartup {
 ```
 
 # License
-The software released under the terms of the [MIT license](./LICENSE.md).
+The software is released under the terms of the [MIT license](./LICENSE.md).
 
 No personal support or any guarantees.
 
 # FAQ
 
-### I want to process one system at MonoBehaviour.Update() and another - at MonoBehaviour.FixedUpdate(). How I can do it?
+### I want to process one system at MonoBehaviour.Update() and another - at MonoBehaviour.FixedUpdate(). How can I do it?
 
 For splitting systems by `MonoBehaviour`-method multiple `EcsSystems` logical groups should be used:
 ```csharp
@@ -290,7 +290,7 @@ void FixedUpdate () {
 }
 ```
 
-### I copy&paste my reset components code again and again. How I can do it in other manner?
+### I copy&paste my reset components code again and again. How can I do it in other manner?
 
 If you want to simplify your code and keep reset/init code at one place, you can setup custom handler to process cleanup / initialization for component:
 ```csharp
@@ -307,7 +307,7 @@ struct MyComponent : IEcsAutoReset<MyComponent> {
 This method will be automatically called for brand new component instance and after component removing from entity and before recycling to component pool.
 > Important: With custom `AutoReset` behaviour there are no any additional checks for reference-type fields, you should provide correct cleanup/init behaviour without possible memory leaks.
 
-### I use components as events that works only one frame, then remove it at last system in execution sequence. It's boring, how I can automate it?
+### I use components as events that work only one frame, then remove it at last system in execution sequence. It's boring, how can I automate it?
 
 If you want to remove one-frame components without additional custom code, you can register them at `EcsSystems`:
 ```csharp
@@ -333,7 +333,7 @@ void Update () {
 > important: All one-frame components should be registered with `DelHere()` after all worlds registration through `AddWorld()`.
 > Important: All one-frame components with specified type will be removed at position in execution flow where this component was registered with `DelHere()` call.
 
-### I want to keep references to entities in components, but entity can be killed at any system and I need protection from reuse same ID. How I can do it?
+### I want to keep references to entities in components, but entity can be killed at any system and I need protection from reusing the same ID. How can I do it?
 
 For keeping entity somewhere you should pack it to special `EcsPackedEntity` or `EcsPackedEntityWithWorld` types:
 ```csharp
