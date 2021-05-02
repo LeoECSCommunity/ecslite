@@ -16,7 +16,7 @@ namespace Leopotam.EcsLite {
         internal int Gen;
     }
 
-    public struct EcsPackedWithWorldEntity {
+    public struct EcsPackedEntityWithWorld {
         internal int Id;
         internal int Gen;
         internal EcsWorld World;
@@ -46,23 +46,23 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public static EcsPackedWithWorldEntity PackEntityWithWorld (this EcsWorld world, int entity) {
-            EcsPackedWithWorldEntity packed;
-            packed.World = world;
-            packed.Id = entity;
-            packed.Gen = world.GetEntityGen (entity);
-            return packed;
+        public static EcsPackedEntityWithWorld PackEntityWithWorld (this EcsWorld world, int entity) {
+            EcsPackedEntityWithWorld packedEntity;
+            packedEntity.World = world;
+            packedEntity.Id = entity;
+            packedEntity.Gen = world.GetEntityGen (entity);
+            return packedEntity;
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public static bool Unpack (this in EcsPackedWithWorldEntity packed, out EcsWorld world, out int entity) {
-            if (!packed.World.IsAlive () || !packed.World.IsEntityAlive (packed.Id) || packed.World.GetEntityGen (packed.Id) != packed.Gen) {
+        public static bool Unpack (this in EcsPackedEntityWithWorld packedEntity, out EcsWorld world, out int entity) {
+            if (!packedEntity.World.IsAlive () || !packedEntity.World.IsEntityAlive (packedEntity.Id) || packedEntity.World.GetEntityGen (packedEntity.Id) != packedEntity.Gen) {
                 world = null;
                 entity = -1;
                 return false;
             }
-            world = packed.World;
-            entity = packed.Id;
+            world = packedEntity.World;
+            entity = packedEntity.Id;
             return true;
         }
     }

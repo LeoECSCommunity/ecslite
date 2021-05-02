@@ -35,8 +35,8 @@ namespace Leopotam.EcsLite {
         List<EcsFilter>[] _filtersByExcludedComponents;
         bool _destroyed;
 
-        public EcsWorld () {
-            Entities = new EntityData[512];
+        public EcsWorld (int capacity = 512) {
+            Entities = new EntityData[capacity];
             _entitiesCount = 0;
             _recycledEntities = new int[512];
             _filters = new Dictionary<int, EcsFilter> (512);

@@ -332,3 +332,20 @@ void Update () {
 
 > important: All one-frame components should be registered with `DelHere()` after all worlds registration through `AddWorld()`.
 > Important: All one-frame components with specified type will be removed at position in execution flow where this component was registered with `DelHere()` call.
+
+### I want to keep references to entities in components, but entity can be killed at any system and I need protection from reuse same ID. How I can do it?
+
+For keeping entity somewhere you should pack it to special `EcsPackedEntity` or `EcsPackedEntityWithWorld` types:
+```csharp
+EcsWorld world = new EcsWorld ();
+int entity = world.NewEntity ();
+EcsPackedEntity packed = world.PackEntity (entity);
+EcsPackedEntityWithWorld packedWithWorld = world.PackEntityWithWorld (entity);
+...
+if (packed.Unpack (world, out int unpacked)) {
+    // unpacked is valid and can be used.
+}
+if (packedWithWorld.Unpack (out EcsWorld unpackedWorld, out int unpackedWithWorld)) {
+    // unpackedWithWorld is valid and can be used.
+}
+```

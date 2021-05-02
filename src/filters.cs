@@ -79,6 +79,7 @@ namespace Leopotam.EcsLite {
         public EcsFilter End (int capacity = 512) {
 #if DEBUG
             if (_built) { throw new Exception ("Cant change built mask."); }
+            if (IncludeCount < 1) { throw new Exception ("Filter should contains at least one include constraint."); }
             _built = true;
 #endif
             Array.Sort (Include, 0, IncludeCount);
