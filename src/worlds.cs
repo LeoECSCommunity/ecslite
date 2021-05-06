@@ -29,6 +29,22 @@ namespace Leopotam.EcsLite {
         List<EcsFilter>[] _filtersByIncludedComponents;
         List<EcsFilter>[] _filtersByExcludedComponents;
         bool _destroyed;
+#if DEBUG
+        readonly List<int> _leakedEntities = new List<int> (512);
+
+        internal bool CheckForLeakedEntities () {
+            if (_leakedEntities.Count > 0) {
+                for (int i = 0, iMax = _leakedEntities.Count; i < iMax; i++) {
+                    ref var entityData = ref Entities[_leakedEntities[i]];
+                    if (entityData.Gen > 0 && entityData.ComponentsCount == 0) {
+                        return true;
+                    }
+                }
+                _leakedEntities.Clear ();
+            }
+            return false;
+        }
+#endif
 
         public EcsWorld (in Config cfg = default) {
             // entities.
@@ -94,6 +110,9 @@ namespace Leopotam.EcsLite {
                     _pools[i].InitAutoReset (entity);
                 }
             }
+#if DEBUG
+            _leakedEntities.Add (entity);
+#endif
             return entity;
         }
 
@@ -177,8 +196,8 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public EcsFilter.Mask GetFilter () {
-            return EcsFilter.Mask.New (this);
+        public EcsFilter.Mask Filter<T> () where T : struct {
+            return EcsFilter.Mask.New (this).Inc<T> ();
         }
 
         internal (EcsFilter, bool) GetFilterInternal (EcsFilter.Mask mask, int capacity = 512) {

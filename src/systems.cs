@@ -120,7 +120,7 @@ namespace Leopotam.EcsLite {
         readonly EcsPool<T> _pool;
 
         public DelHereSystem (EcsWorld world) {
-            _filter = world.GetFilter ().Inc<T> ().End ();
+            _filter = world.Filter<T> ().End ();
             _pool = world.GetPool<T> ();
         }
 

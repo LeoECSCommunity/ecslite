@@ -142,7 +142,7 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
         
         // We want to get entities with "Weapon" and without "Health".
         // Better to cache filter somehow.
-        _filter = world.GetFilter ().Inc<Weapon> ().Exc<Health> ().End ();
+        _filter = world.GetFilter<Weapon> ().Exc<Health> ().End ();
         
         // creating test entity.
         int entity = _world.NewEntity ();
@@ -157,6 +157,8 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
     }
 }
 ```
+
+Additional constraints can be added with `Inc<>()` / `Exc<>()` methods.
 
 > Important: Any filter supports any amount of components, include and exclude lists can't intersect and should be unique.
 
