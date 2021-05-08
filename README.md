@@ -140,26 +140,29 @@ pool.Del (entity);
 Container for keeping filtered entities with specified component list:
 ```csharp
 class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
-    EcsPool<Weapon> _weapons = null;    
-    EcsFilter  _filter = null;
-
     public void Init (EcsSystems systems) {
+        // We want to get default world instance...
         EcsWorld world = systems.GetWorld ();
-        // We want to cache pool for Weapon components for later use.
-        _weapons = world.GetPool<Weapon>();
         
-        // We want to get entities with "Weapon" and without "Health".
-        // Better to cache filter somehow.
-        _filter = world.Filter<Weapon> ().Exc<Health> ().End ();
-        
-        // creating test entity.
+        // and create test entity...
         int entity = _world.NewEntity ();
-        _weapons.Add (entity);
+        
+        // with "Weapon" component on it.
+        var weapons = world.GetPool<Weapon>();
+        weapons.Add (entity);
     }
 
     public void Run (EcsSystems systems) {
-        foreach (int entity in _filter) {
-            ref Weapon weapon = ref _weapons.Get (entity);
+        // We want to get entities with "Weapon" and without "Health".
+        // You can cache this filter somehow if you want.
+        var filter = world.Filter<Weapon> ().Exc<Health> ().End ();
+        
+        // We want to get pool of "Weapon" components.
+        // You can cache this pool somehow if you want.
+        var weapons = world.GetPool<Weapon>();
+        
+        foreach (int entity in filter) {
+            ref Weapon weapon = ref weapons.Get (entity);
             weapon.Ammo = System.Math.Max (0, weapon.Ammo - 1);
         }
     }
