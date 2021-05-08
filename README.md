@@ -150,7 +150,7 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
         
         // We want to get entities with "Weapon" and without "Health".
         // Better to cache filter somehow.
-        _filter = world.GetFilter<Weapon> ().Exc<Health> ().End ();
+        _filter = world.Filter<Weapon> ().Exc<Health> ().End ();
         
         // creating test entity.
         int entity = _world.NewEntity ();
