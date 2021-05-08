@@ -202,6 +202,19 @@ namespace Leopotam.EcsLite {
             return EcsFilter.Mask.New (this).Inc<T> ();
         }
 
+        public int GetComponents (int entity, ref object[] list) {
+            var itemsCount = Entities[entity].ComponentsCount;
+            if (list == null || list.Length < itemsCount) {
+                list = new object[itemsCount];
+            }
+            for (int i = 0, j = 0, iMax = itemsCount; i < iMax; i++) {
+                if (_pools[i].Has (entity)) {
+                    list[j++] = _pools[i].GetRaw (entity);
+                }
+            }
+            return itemsCount;
+        }
+
         internal (EcsFilter, bool) GetFilterInternal (EcsFilter.Mask mask, int capacity = 512) {
             var hash = mask.Hash;
             var exists = _filters.TryGetValue (hash, out var filter);

@@ -17,12 +17,9 @@ namespace Leopotam.EcsLite {
         bool Has (int entity);
         void Del (int entity);
         void InitAutoReset (int entity);
+        object GetRaw (int entity);
     }
 
-    /// <summary>
-    /// Marks component type for custom reset behaviour.
-    /// </summary>
-    /// <typeparam name="T">Type of component, should be the same as main component!</typeparam>
     public interface IEcsAutoReset<T> where T : struct {
         void AutoReset (ref T c);
     }
@@ -81,6 +78,10 @@ namespace Leopotam.EcsLite {
 
         void IEcsPool.InitAutoReset (int entity) {
             _autoReset?.Invoke (ref _items[entity].Data);
+        }
+
+        object IEcsPool.GetRaw (int entity) {
+            return _items[entity].Data;
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
