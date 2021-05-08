@@ -14,6 +14,10 @@ using Unity.IL2CPP.CompilerServices;
 namespace Leopotam.EcsLite {
     public interface IEcsSystem { }
 
+    public interface IEcsPreInitSystem : IEcsSystem {
+        void PreInit (EcsSystems systems);
+    }
+
     public interface IEcsInitSystem : IEcsSystem {
         void Init (EcsSystems systems);
     }
@@ -24,6 +28,10 @@ namespace Leopotam.EcsLite {
 
     public interface IEcsDestroySystem : IEcsSystem {
         void Destroy (EcsSystems systems);
+    }
+
+    public interface IEcsPostDestroySystem : IEcsSystem {
+        void PostDestroy (EcsSystems systems);
     }
 
 #if ENABLE_IL2CPP
@@ -49,13 +57,32 @@ namespace Leopotam.EcsLite {
         public T GetShared<T> () where T : class {
             return _shared as T;
         }
+        
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public EcsWorld GetWorld (string name = null) {
+            if (name == null) {
+                return _defaultWorld;
+            }
+            _worlds.TryGetValue (name, out var world);
+            return world;
+        }
 
         public void Destroy () {
             for (var i = _allSystems.Count - 1; i >= 0; i--) {
                 if (_allSystems[i] is IEcsDestroySystem destroySystem) {
                     destroySystem.Destroy (this);
 #if DEBUG
-                    // World.CheckForLeakedEntities ($"{destroySystem.GetType ().Name}.Destroy ()");
+                    var worldName = CheckForLeakedEntities ();
+                    if (worldName != null) { throw new System.Exception ($"Empty entity detected in world \"{worldName}\" after {destroySystem.GetType ().Name}.Destroy()."); }
+#endif
+                }
+            }
+            for (var i = _allSystems.Count - 1; i >= 0; i--) {
+                if (_allSystems[i] is IEcsPostDestroySystem postDestroySystem) {
+                    postDestroySystem.PostDestroy (this);
+#if DEBUG
+                    var worldName = CheckForLeakedEntities ();
+                    if (worldName != null) { throw new System.Exception ($"Empty entity detected in world \"{worldName}\" after {postDestroySystem.GetType ().Name}.PostDestroy()."); }
 #endif
                 }
             }
@@ -66,15 +93,6 @@ namespace Leopotam.EcsLite {
         public EcsSystems AddWorld (EcsWorld world, string name) {
             _worlds[name] = world;
             return this;
-        }
-
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public EcsWorld GetWorld (string name = null) {
-            if (name == null) {
-                return _defaultWorld;
-            }
-            _worlds.TryGetValue (name, out var world);
-            return world;
         }
 
         public EcsSystems Add (IEcsSystem system) {
@@ -89,10 +107,23 @@ namespace Leopotam.EcsLite {
             if (_runSystemsCount > 0) {
                 _runSystems = new IEcsRunSystem[_runSystemsCount];
             }
+            foreach (var system in _allSystems) {
+                if (system is IEcsPreInitSystem initSystem) {
+                    initSystem.PreInit (this);
+#if DEBUG
+                    var worldName = CheckForLeakedEntities ();
+                    if (worldName != null) { throw new System.Exception ($"Empty entity detected in world \"{worldName}\" after {initSystem.GetType ().Name}.PreInit()."); }
+#endif
+                }
+            }
             var runIdx = 0;
             foreach (var system in _allSystems) {
                 if (system is IEcsInitSystem initSystem) {
                     initSystem.Init (this);
+#if DEBUG
+                    var worldName = CheckForLeakedEntities ();
+                    if (worldName != null) { throw new System.Exception ($"Empty entity detected in world \"{worldName}\" after {initSystem.GetType ().Name}.Init()."); }
+#endif
                 }
                 if (system is IEcsRunSystem runSystem) {
                     _runSystems[runIdx++] = runSystem;
@@ -103,12 +134,28 @@ namespace Leopotam.EcsLite {
         public void Run () {
             for (int i = 0, iMax = _runSystemsCount; i < iMax; i++) {
                 _runSystems[i].Run (this);
+#if DEBUG
+                var worldName = CheckForLeakedEntities ();
+                if (worldName != null) { throw new System.Exception ($"Empty entity detected in world \"{worldName}\" after {_runSystems[i].GetType ().Name}.Run()."); }
+#endif
             }
         }
 
         public EcsSystems DelHere<T> (string worldName = null) where T : struct {
             return Add (new DelHereSystem<T> (GetWorld (worldName)));
         }
+
+#if DEBUG
+        string CheckForLeakedEntities () {
+            if (_defaultWorld.CheckForLeakedEntities ()) { return "default"; }
+            foreach (var pair in _worlds) {
+                if (pair.Value.CheckForLeakedEntities ()) {
+                    return pair.Key;
+                }
+            }
+            return null;
+        }
+#endif
     }
 
 #if ENABLE_IL2CPP

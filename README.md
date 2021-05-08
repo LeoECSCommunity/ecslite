@@ -71,9 +71,13 @@ Components can be added / requested / removed through [component pools](#ecspool
 ## System
 Сontainer for logic for processing filtered entities. User class should implement `IEcsInitSystem`, `IEcsDestroySystem`, `IEcsRunSystem` (or other supported) interfaces:
 ```csharp
-class UserSystem : IEcsInitSystem, IEcsRunSystem, IEcsDestroySystem {
+class UserSystem : IEcsPreInitSystem, IEcsInitSystem, IEcsRunSystem, IEcsDestroySystem, IEcsPostDestroySystem {
+    public void PreInit (EcsSystems systems) {
+        // Will be called once during EcsSystems.Init() call and before IEcsInitSystem.Init().
+    }
+    
     public void Init (EcsSystems systems) {
-        // Will be called once during EcsSystems.Init() call.
+        // Will be called once during EcsSystems.Init() call and after IEcsInitSystem.PreInit().
     }
     
     public void Run (EcsSystems systems) {
@@ -81,7 +85,11 @@ class UserSystem : IEcsInitSystem, IEcsRunSystem, IEcsDestroySystem {
     }
 
     public void Destroy (EcsSystems systems) {
-        // Will be called once during EcsSystems.Destroy() call.
+        // Will be called once during EcsSystems.Destroy() call and before IEcsInitSystem.PostDestroy().
+    }
+    
+    public void PostDestroy (EcsSystems systems) {
+        // Will be called once during EcsSystems.Destroy() call and after IEcsInitSystem.Destroy().
     }
 }
 ```

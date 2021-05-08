@@ -68,8 +68,10 @@ namespace Leopotam.EcsLite {
         }
 
         public void Destroy () {
+#if DEBUG
+            if (CheckForLeakedEntities ()) { throw new Exception ($"Empty entity detected before EcsWorld.Destroy()."); }
+#endif
             _destroyed = true;
-            // FIXME: remove all entities.
             for (var i = _entitiesCount - 1; i >= 0; i--) {
                 ref var entityData = ref Entities[i];
                 if (entityData.ComponentsCount > 0) {
