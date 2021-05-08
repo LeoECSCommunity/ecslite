@@ -145,7 +145,7 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
         EcsWorld world = systems.GetWorld ();
         
         // and create test entity...
-        int entity = _world.NewEntity ();
+        int entity = world.NewEntity ();
         
         // with "Weapon" component on it.
         var weapons = world.GetPool<Weapon>();
@@ -153,6 +153,7 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
     }
 
     public void Run (EcsSystems systems) {
+        EcsWorld world = systems.GetWorld ();
         // We want to get entities with "Weapon" and without "Health".
         // You can cache this filter somehow if you want.
         var filter = world.Filter<Weapon> ().Exc<Health> ().End ();
