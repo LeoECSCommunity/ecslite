@@ -159,7 +159,7 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
 
     public void Run (EcsSystems systems) {
         foreach (int entity in _filter) {
-            ref Weapon weapon = ref weapons.Get (entity);
+            ref Weapon weapon = ref _weapons.Get (entity);
             weapon.Ammo = System.Math.Max (0, weapon.Ammo - 1);
         }
     }
