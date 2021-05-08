@@ -37,7 +37,7 @@ namespace Leopotam.EcsLite {
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public static bool Unpack (this in EcsPackedEntity packed, EcsWorld world, out int entity) {
-            if (!world.IsAlive () || !world.IsEntityAlive (packed.Id) || world.GetEntityGen (packed.Id) != packed.Gen) {
+            if (!world.IsAlive () || !world.IsEntityAliveInternal (packed.Id) || world.GetEntityGen (packed.Id) != packed.Gen) {
                 entity = -1;
                 return false;
             }
@@ -61,7 +61,7 @@ namespace Leopotam.EcsLite {
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public static bool Unpack (this in EcsPackedEntityWithWorld packedEntity, out EcsWorld world, out int entity) {
-            if (!packedEntity.World.IsAlive () || !packedEntity.World.IsEntityAlive (packedEntity.Id) || packedEntity.World.GetEntityGen (packedEntity.Id) != packedEntity.Gen) {
+            if (!packedEntity.World.IsAlive () || !packedEntity.World.IsEntityAliveInternal (packedEntity.Id) || packedEntity.World.GetEntityGen (packedEntity.Id) != packedEntity.Gen) {
                 world = null;
                 entity = -1;
                 return false;

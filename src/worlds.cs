@@ -155,11 +155,6 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public bool IsEntityAlive (int entity) {
-            return entity >= 0 && entity < _entitiesCount && Entities[entity].Gen > 0;
-        }
-
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public short GetEntityGen (int entity) {
             return Entities[entity].Gen;
         }
@@ -213,6 +208,11 @@ namespace Leopotam.EcsLite {
                 }
             }
             return itemsCount;
+        }
+        
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        internal bool IsEntityAliveInternal (int entity) {
+            return entity >= 0 && entity < _entitiesCount && Entities[entity].Gen > 0;
         }
 
         internal (EcsFilter, bool) GetFilterInternal (EcsFilter.Mask mask, int capacity = 512) {

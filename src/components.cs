@@ -87,7 +87,7 @@ namespace Leopotam.EcsLite {
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public ref T Add (int entity) {
 #if DEBUG
-            if (!_world.IsEntityAlive (entity)) { throw new Exception ("Cant touch destroyed entity."); }
+            if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
             ref var itemData = ref _items[entity];
 #if DEBUG
@@ -103,7 +103,7 @@ namespace Leopotam.EcsLite {
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public ref T Get (int entity) {
 #if DEBUG
-            if (!_world.IsEntityAlive (entity)) { throw new Exception ("Cant touch destroyed entity."); }
+            if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
 #if DEBUG
             if (_world.GetEntityGen (entity) < 0) { throw new Exception ("Cant get component from destroyed entity."); }
@@ -115,7 +115,7 @@ namespace Leopotam.EcsLite {
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public bool Has (int entity) {
 #if DEBUG
-            if (!_world.IsEntityAlive (entity)) { throw new Exception ("Cant touch destroyed entity."); }
+            if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
             return _items[entity].Attached;
         }
@@ -123,7 +123,7 @@ namespace Leopotam.EcsLite {
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public void Del (int entity) {
 #if DEBUG
-            if (!_world.IsEntityAlive (entity)) { throw new Exception ("Cant touch destroyed entity."); }
+            if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
             ref var itemData = ref _items[entity];
             if (itemData.Attached) {
