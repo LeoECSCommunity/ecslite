@@ -363,3 +363,39 @@ if (packedWithWorld.Unpack (out EcsWorld unpackedWorld, out int unpackedWithWorl
     // unpackedWithWorld is valid and can be used.
 }
 ```
+
+### I want to add some reactive behaviour on world changes, how I can do it?
+
+You can use `LEOECSLITE_WORLD_EVENTS` definition to enable custom event listeners support on worlds:
+
+```charp
+class TestWorldEventListener : IEcsWorldEventListener {
+    public void OnEntityCreated (int entity) {
+        // entity created - raises on world.NewEntity().
+    }
+
+    public void OnEntityChanged (int entity) {
+        // entity changed - raises on pool.Add() / pool.Del().
+    }
+
+    public void OnEntityDestroyed (int entity) {
+        // entity destroyed - raises on world.DelEntity() or last component removing.
+    }
+
+    public void OnFilterCreated (EcsFilter filter) {
+        // filter created - raises on world.Filter().End() for brand new filter.
+    }
+
+    public void OnWorldResized (int newSize) {
+        // world resized - raises on world/pools resizing when no room for entity at world.NewEntity() call.
+    }
+
+    public void OnWorldDestroyed (EcsWorld world) {
+        // world destroyed - raises on world.Destroy().
+    }
+}
+...
+var world = new EcsWorld ();
+var listener = new TestWorldEventListener ();
+world.AddEventListener (listener);
+``` 
