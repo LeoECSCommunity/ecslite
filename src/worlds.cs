@@ -78,6 +78,9 @@ namespace Leopotam.EcsLite {
                     DelEntity (i);
                 }
             }
+            for (var i = _poolsCount - 1; i >= 0; i--) {
+                _pools[i].Destroy ();
+            }
             _pools = Array.Empty<IEcsPool> ();
             _poolHashes.Clear ();
             _filters.Clear ();
