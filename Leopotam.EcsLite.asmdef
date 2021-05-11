@@ -1,6 +1,6 @@
 {
     "name": "Leopotam.EcsLite",
-    "rootNamespace": "",
+    "rootNamespace": "Leopotam.EcsLite",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
