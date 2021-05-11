@@ -100,6 +100,9 @@ namespace Leopotam.EcsLite {
             itemData.Attached = true;
             _world.OnEntityChange (entity, _id, true);
             _world.Entities[entity].ComponentsCount++;
+#if DEBUG || LEOECSLITE_WORLD_EVENTS
+            _world.RaiseEntityChangeEvent (entity);
+#endif
             return ref itemData.Data;
         }
 
@@ -137,6 +140,9 @@ namespace Leopotam.EcsLite {
                 } else {
                     itemData.Data = default;
                 }
+#if DEBUG || LEOECSLITE_WORLD_EVENTS
+                _world.RaiseEntityChangeEvent (entity);
+#endif
                 ref var entityData = ref _world.Entities[entity];
                 entityData.ComponentsCount--;
                 if (entityData.ComponentsCount == 0) {
