@@ -210,6 +210,11 @@ namespace Leopotam.EcsLite {
             return Entities[entity].Gen;
         }
 
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public int GetAllocatedEntitiesCount () {
+            return _entitiesCount;
+        }
+
         public EcsPool<T> GetPool<T> () where T : struct {
             var poolType = typeof (EcsPool<T>);
             if (_poolHashes.TryGetValue (poolType, out var rawPool)) {
