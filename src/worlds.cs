@@ -253,7 +253,7 @@ namespace Leopotam.EcsLite {
             if (list == null || list.Length < itemsCount) {
                 list = new object[itemsCount];
             }
-            for (int i = 0, j = 0, iMax = itemsCount; i < iMax; i++) {
+            for (int i = 0, j = 0, iMax = _poolsCount; i < iMax; i++) {
                 if (_pools[i].Has (entity)) {
                     list[j++] = _pools[i].GetRaw (entity);
                 }
