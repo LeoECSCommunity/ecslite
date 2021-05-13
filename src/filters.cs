@@ -49,6 +49,11 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public int[] GetRawEntities () {
+            return _entities;
+        }
+
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator () {
             _lockCount++;
             return new Enumerator (this);
@@ -123,7 +128,7 @@ namespace Leopotam.EcsLite {
             public Enumerator (EcsFilter filter) {
                 _filter = filter;
                 _entities = filter._entities;
-                _count = _filter._entitiesCount;
+                _count = filter._entitiesCount;
                 _idx = -1;
             }
 
