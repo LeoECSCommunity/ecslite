@@ -18,7 +18,6 @@ namespace Leopotam.EcsLite {
         void Del (int entity);
         void InitAutoReset (int entity);
         object GetRaw (int entity);
-        void Destroy ();
     }
 
     public interface IEcsAutoReset<T> where T : struct {
@@ -85,8 +84,6 @@ namespace Leopotam.EcsLite {
             return _items[entity].Data;
         }
 
-        void IEcsPool.Destroy () { }
-        
         public PoolItem[] GetRawItems () {
             return _items;
         }
