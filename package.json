@@ -6,8 +6,8 @@
     "unity": "2020.3",
     "version": "2021.5.22-preview",
     "keywords": [
+        "leoecslite",
         "leoecs",
-        "ecslite",
         "ecs",
         "performance"
     ],

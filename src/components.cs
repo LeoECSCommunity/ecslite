@@ -86,6 +86,10 @@ namespace Leopotam.EcsLite {
         }
 
         void IEcsPool.Destroy () { }
+        
+        public PoolItem[] GetRawItems () {
+            return _items;
+        }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public ref T Add (int entity) {
@@ -95,9 +99,9 @@ namespace Leopotam.EcsLite {
             ref var itemData = ref _items[entity];
 #if DEBUG
             if (_world.GetEntityGen (entity) < 0) { throw new Exception ("Cant add component to destroyed entity."); }
-            if (itemData.Attached) { throw new Exception ("Already attached."); }
+            if (itemData.Attached != 0) { throw new Exception ("Already attached."); }
 #endif
-            itemData.Attached = true;
+            itemData.Attached = 1;
             _world.OnEntityChange (entity, _id, true);
             _world.Entities[entity].ComponentsCount++;
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
@@ -113,7 +117,7 @@ namespace Leopotam.EcsLite {
 #endif
 #if DEBUG
             if (_world.GetEntityGen (entity) < 0) { throw new Exception ("Cant get component from destroyed entity."); }
-            if (!_items[entity].Attached) { throw new Exception ("Not attached."); }
+            if (_items[entity].Attached == 0) { throw new Exception ("Not attached."); }
 #endif
             return ref _items[entity].Data;
         }
@@ -123,7 +127,7 @@ namespace Leopotam.EcsLite {
 #if DEBUG
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
-            return _items[entity].Attached;
+            return _items[entity].Attached != 0;
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
@@ -132,9 +136,9 @@ namespace Leopotam.EcsLite {
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
             ref var itemData = ref _items[entity];
-            if (itemData.Attached) {
+            if (itemData.Attached != 0) {
                 _world.OnEntityChange (entity, _id, false);
-                itemData.Attached = false;
+                itemData.Attached = 0;
                 if (_autoReset != null) {
                     _autoReset.Invoke (ref _items[entity].Data);
                 } else {
@@ -151,8 +155,8 @@ namespace Leopotam.EcsLite {
             }
         }
 
-        struct PoolItem {
-            public bool Attached;
+        public struct PoolItem {
+            public byte Attached;
             public T Data;
         }
 
