@@ -23,6 +23,7 @@ Performance, zero/small memory allocations/footprint, no dependencies on any gam
 * [Engine integration](#engine-integration)
     * [Unity](#unity)
     * [Custom engine](#custom-engine)
+* [Extensions](#extensions)
 * [License](#license)
 * [FAQ](#faq)
 
@@ -272,6 +273,9 @@ class EcsStartup {
     }
 }
 ```
+
+# Extensions
+* [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity)
 
 # License
 The software is released under the terms of the [MIT license](./LICENSE.md).
