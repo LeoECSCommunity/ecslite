@@ -275,7 +275,8 @@ class EcsStartup {
 ```
 
 # Extensions
-* [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity)
+* [Threads support](https://github.com/Leopotam/ecslite-threads).
+* [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity).
 
 # License
 The software is released under the terms of the [MIT license](./LICENSE.md).
