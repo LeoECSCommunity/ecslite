@@ -373,7 +373,7 @@ if (packedWithWorld.Unpack (out EcsWorld unpackedWorld, out int unpackedWithWorl
 
 You can use `LEOECSLITE_WORLD_EVENTS` definition to enable custom event listeners support on worlds:
 
-```charp
+```csharp
 class TestWorldEventListener : IEcsWorldEventListener {
     public void OnEntityCreated (int entity) {
         // entity created - raises on world.NewEntity().
