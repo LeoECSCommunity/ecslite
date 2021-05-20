@@ -284,6 +284,7 @@ class EcsStartup {
 # Extensions
 * [Threads support](https://github.com/Leopotam/ecslite-threads)
 * [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity)
+* [UniLeo - Unity scene data converter](https://github.com/voody2506/UniLeo-Lite)
 
 # License
 The software is released under the terms of the [MIT license](./LICENSE.md).
