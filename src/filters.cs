@@ -5,7 +5,6 @@
 // ----------------------------------------------------------------------------
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 #if ENABLE_IL2CPP
@@ -20,18 +19,18 @@ namespace Leopotam.EcsLite {
     public sealed class EcsFilter {
         readonly EcsWorld _world;
         readonly Mask _mask;
-        int[] _entities;
+        int[] _denseEntities;
         int _entitiesCount;
-        internal readonly Dictionary<int, int> EntitiesMap;
+        internal int[] SparseEntities;
         int _lockCount;
         DelayedOp[] _delayedOps;
         int _delayedOpsCount;
 
-        internal EcsFilter (EcsWorld world, Mask mask, int capacity = 512) {
+        internal EcsFilter (EcsWorld world, Mask mask, int denseCapacity, int sparseCapacity) {
             _world = world;
             _mask = mask;
-            _entities = new int[capacity];
-            EntitiesMap = new Dictionary<int, int> (capacity);
+            _denseEntities = new int[denseCapacity];
+            SparseEntities = new int[sparseCapacity];
             _entitiesCount = 0;
             _delayedOps = new DelayedOp[512];
             _delayedOpsCount = 0;
@@ -50,13 +49,18 @@ namespace Leopotam.EcsLite {
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public int[] GetRawEntities () {
-            return _entities;
+            return _denseEntities;
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator () {
             _lockCount++;
             return new Enumerator (this);
+        }
+
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        internal void ResizeSparseIndex (int capacity) {
+            Array.Resize (ref SparseEntities, capacity);
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
@@ -67,22 +71,22 @@ namespace Leopotam.EcsLite {
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         internal void AddEntity (int entity) {
             if (AddDelayedOp (true, entity)) { return; }
-            if (_entitiesCount == _entities.Length) {
-                Array.Resize (ref _entities, _entitiesCount << 1);
+            if (_entitiesCount == _denseEntities.Length) {
+                Array.Resize (ref _denseEntities, _entitiesCount << 1);
             }
-            EntitiesMap[entity] = _entitiesCount;
-            _entities[_entitiesCount++] = entity;
+            _denseEntities[_entitiesCount++] = entity;
+            SparseEntities[entity] = _entitiesCount;
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         internal void RemoveEntity (int entity) {
             if (AddDelayedOp (false, entity)) { return; }
-            var idx = EntitiesMap[entity];
-            EntitiesMap.Remove (entity);
+            var idx = SparseEntities[entity] - 1;
+            SparseEntities[entity] = 0;
             _entitiesCount--;
             if (idx < _entitiesCount) {
-                _entities[idx] = _entities[_entitiesCount];
-                EntitiesMap[_entities[idx]] = idx;
+                _denseEntities[idx] = _denseEntities[_entitiesCount];
+                SparseEntities[_denseEntities[idx]] = idx + 1;
             }
         }
 
@@ -127,7 +131,7 @@ namespace Leopotam.EcsLite {
 
             public Enumerator (EcsFilter filter) {
                 _filter = filter;
-                _entities = filter._entities;
+                _entities = filter._denseEntities;
                 _count = filter._entitiesCount;
                 _idx = -1;
             }

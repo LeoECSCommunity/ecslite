@@ -25,7 +25,8 @@ namespace Leopotam.EcsLite {
         IEcsPool[] _pools;
         int _poolsCount;
         readonly Dictionary<Type, IEcsPool> _poolHashes;
-        readonly Dictionary<int, EcsFilter> _filters;
+        readonly Dictionary<int, EcsFilter> _hashedFilters;
+        readonly List<EcsFilter> _allFilters;
         List<EcsFilter>[] _filtersByIncludedComponents;
         List<EcsFilter>[] _filtersByExcludedComponents;
         bool _destroyed;
@@ -86,7 +87,8 @@ namespace Leopotam.EcsLite {
             _poolsCount = 0;
             // filters.
             capacity = cfg.Filters > 0 ? cfg.Filters : Config.FiltersDefault;
-            _filters = new Dictionary<int, EcsFilter> (capacity);
+            _hashedFilters = new Dictionary<int, EcsFilter> (capacity);
+            _allFilters = new List<EcsFilter> (capacity);
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
             _eventListeners = new List<IEcsWorldEventListener> (4);
 #endif
@@ -106,7 +108,8 @@ namespace Leopotam.EcsLite {
             }
             _pools = Array.Empty<IEcsPool> ();
             _poolHashes.Clear ();
-            _filters.Clear ();
+            _hashedFilters.Clear ();
+            _allFilters.Clear ();
             _filtersByIncludedComponents = Array.Empty<List<EcsFilter>> ();
             _filtersByExcludedComponents = Array.Empty<List<EcsFilter>> ();
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
@@ -135,6 +138,9 @@ namespace Leopotam.EcsLite {
                     Array.Resize (ref Entities, newSize);
                     for (int i = 0, iMax = _poolsCount; i < iMax; i++) {
                         _pools[i].Resize (newSize);
+                    }
+                    for (int i = 0, iMax = _allFilters.Count; i < iMax; i++) {
+                        _allFilters[i].ResizeSparseIndex (newSize);
                     }
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
                     for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
@@ -270,10 +276,11 @@ namespace Leopotam.EcsLite {
 
         internal (EcsFilter, bool) GetFilterInternal (EcsFilter.Mask mask, int capacity = 512) {
             var hash = mask.Hash;
-            var exists = _filters.TryGetValue (hash, out var filter);
+            var exists = _hashedFilters.TryGetValue (hash, out var filter);
             if (exists) { return (filter, false); }
-            filter = new EcsFilter (this, mask, capacity);
-            _filters[hash] = filter;
+            filter = new EcsFilter (this, mask, capacity, Entities.Length);
+            _hashedFilters[hash] = filter;
+            _allFilters.Add (filter);
             // add to component dictionaries for fast compatibility scan.
             for (int i = 0, iMax = mask.IncludeCount; i < iMax; i++) {
                 var list = _filtersByIncludedComponents[mask.Include[i]];
@@ -315,7 +322,7 @@ namespace Leopotam.EcsLite {
                     foreach (var filter in includeList) {
                         if (IsMaskCompatible (filter.GetMask (), entity)) {
 #if DEBUG
-                            if (filter.EntitiesMap.ContainsKey (entity)) { throw new Exception ("Entity already in filter."); }
+                            if (filter.SparseEntities[entity] > 0) { throw new Exception ("Entity already in filter."); }
 #endif
                             filter.AddEntity (entity);
                         }
@@ -325,7 +332,7 @@ namespace Leopotam.EcsLite {
                     foreach (var filter in excludeList) {
                         if (IsMaskCompatibleWithout (filter.GetMask (), entity, componentType)) {
 #if DEBUG
-                            if (!filter.EntitiesMap.ContainsKey (entity)) { throw new Exception ("Entity not in filter."); }
+                            if (filter.SparseEntities[entity] == 0) { throw new Exception ("Entity not in filter."); }
 #endif
                             filter.RemoveEntity (entity);
                         }
@@ -337,7 +344,7 @@ namespace Leopotam.EcsLite {
                     foreach (var filter in includeList) {
                         if (IsMaskCompatible (filter.GetMask (), entity)) {
 #if DEBUG
-                            if (!filter.EntitiesMap.ContainsKey (entity)) { throw new Exception ("Entity not in filter."); }
+                            if (filter.SparseEntities[entity] == 0) { throw new Exception ("Entity not in filter."); }
 #endif
                             filter.RemoveEntity (entity);
                         }
@@ -347,7 +354,7 @@ namespace Leopotam.EcsLite {
                     foreach (var filter in excludeList) {
                         if (IsMaskCompatibleWithout (filter.GetMask (), entity, componentType)) {
 #if DEBUG
-                            if (filter.EntitiesMap.ContainsKey (entity)) { throw new Exception ("Entity already in filter."); }
+                            if (filter.SparseEntities[entity] > 0) { throw new Exception ("Entity already in filter."); }
 #endif
                             filter.AddEntity (entity);
                         }
