@@ -24,6 +24,7 @@ namespace Leopotam.EcsLite {
         int _recycledEntitiesCount;
         IEcsPool[] _pools;
         int _poolsCount;
+        readonly int _poolDenseSize;
         readonly Dictionary<Type, IEcsPool> _poolHashes;
         readonly Dictionary<int, EcsFilter> _hashedFilters;
         readonly List<EcsFilter> _allFilters;
@@ -89,6 +90,7 @@ namespace Leopotam.EcsLite {
             capacity = cfg.Filters > 0 ? cfg.Filters : Config.FiltersDefault;
             _hashedFilters = new Dictionary<int, EcsFilter> (capacity);
             _allFilters = new List<EcsFilter> (capacity);
+            _poolDenseSize = cfg.PoolDenseSize > 0 ? cfg.PoolDenseSize : Config.PoolDenseSizeDefault;
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
             _eventListeners = new List<IEcsWorldEventListener> (4);
 #endif
@@ -150,9 +152,6 @@ namespace Leopotam.EcsLite {
                 }
                 entity = _entitiesCount++;
                 Entities[entity].Gen = 1;
-                for (int i = 0, iMax = _poolsCount; i < iMax; i++) {
-                    _pools[i].InitAutoReset (entity);
-                }
             }
 #if DEBUG
             _leakedEntities.Add (entity);
@@ -223,7 +222,7 @@ namespace Leopotam.EcsLite {
             if (_poolHashes.TryGetValue (poolType, out var rawPool)) {
                 return (EcsPool<T>) rawPool;
             }
-            var pool = new EcsPool<T> (this, _poolsCount, Entities.Length);
+            var pool = new EcsPool<T> (this, _poolsCount, _poolDenseSize, Entities.Length);
             _poolHashes[poolType] = pool;
             if (_poolsCount == _pools.Length) {
                 var newSize = _poolsCount << 1;
@@ -400,11 +399,13 @@ namespace Leopotam.EcsLite {
             public int RecycledEntities;
             public int Pools;
             public int Filters;
+            public int PoolDenseSize;
 
             internal const int EntitiesDefault = 512;
             internal const int RecycledEntitiesDefault = 512;
             internal const int PoolsDefault = 512;
             internal const int FiltersDefault = 512;
+            internal const int PoolDenseSizeDefault = 512;
         }
 
         internal struct EntityData {

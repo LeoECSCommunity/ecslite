@@ -16,7 +16,6 @@ namespace Leopotam.EcsLite {
         void Resize (int capacity);
         bool Has (int entity);
         void Del (int entity);
-        void InitAutoReset (int entity);
         object GetRaw (int entity);
     }
 
@@ -32,15 +31,24 @@ namespace Leopotam.EcsLite {
         readonly EcsWorld _world;
         readonly int _id;
         readonly AutoResetHandler _autoReset;
-        PoolItem[] _items;
+        // 1-based index.
+        T[] _denseItems;
+        int[] _sparseItems;
+        int _denseItemsCount;
+        int[] _recycledItems;
+        int _recycledItemsCount;
 #if ENABLE_IL2CPP && !UNITY_EDITOR
         T _autoresetFakeInstance;
 #endif
 
-        internal EcsPool (EcsWorld world, int id, int capacity) {
+        internal EcsPool (EcsWorld world, int id, int denseCapacity, int sparseCapacity) {
             _world = world;
             _id = id;
-            _items = new PoolItem[capacity];
+            _denseItems = new T[denseCapacity + 1];
+            _sparseItems = new int[sparseCapacity];
+            _denseItemsCount = 1;
+            _recycledItems = new int[512];
+            _recycledItemsCount = 0;
             var type = typeof (T);
             var isAutoReset = typeof (IEcsAutoReset<T>).IsAssignableFrom (type);
 #if DEBUG
@@ -73,50 +81,49 @@ namespace Leopotam.EcsLite {
         }
 
         void IEcsPool.Resize (int capacity) {
-            Array.Resize (ref _items, capacity);
-        }
-
-        void IEcsPool.InitAutoReset (int entity) {
-            _autoReset?.Invoke (ref _items[entity].Data);
+            Array.Resize (ref _sparseItems, capacity);
         }
 
         object IEcsPool.GetRaw (int entity) {
-            return _items[entity].Data;
+            return _denseItems[_sparseItems[entity] - 1];
         }
 
-        public PoolItem[] GetRawItems () {
-            return _items;
+        public T[] GetRawItems () {
+            return _denseItems;
         }
 
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public ref T Add (int entity) {
 #if DEBUG
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
+            if (_sparseItems[entity] > 0) { throw new Exception ("Already attached."); }
 #endif
-            ref var itemData = ref _items[entity];
-#if DEBUG
-            if (_world.GetEntityGen (entity) < 0) { throw new Exception ("Cant add component to destroyed entity."); }
-            if (itemData.Attached != 0) { throw new Exception ("Already attached."); }
-#endif
-            itemData.Attached = 1;
+            int idx;
+            if (_recycledItemsCount > 0) {
+                idx = _recycledItems[--_recycledItemsCount];
+            } else {
+                idx = _denseItemsCount;
+                if (_denseItemsCount == _denseItems.Length) {
+                    Array.Resize (ref _denseItems, _denseItemsCount << 1);
+                }
+                _denseItemsCount++;
+                _autoReset?.Invoke (ref _denseItems[idx]);
+            }
+            _sparseItems[entity] = idx;
             _world.OnEntityChange (entity, _id, true);
             _world.Entities[entity].ComponentsCount++;
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
             _world.RaiseEntityChangeEvent (entity);
 #endif
-            return ref itemData.Data;
+            return ref _denseItems[idx];
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public ref T Get (int entity) {
 #if DEBUG
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
+            if (_sparseItems[entity] == 0) { throw new Exception ("Not attached."); }
 #endif
-#if DEBUG
-            if (_world.GetEntityGen (entity) < 0) { throw new Exception ("Cant get component from destroyed entity."); }
-            if (_items[entity].Attached == 0) { throw new Exception ("Not attached."); }
-#endif
-            return ref _items[entity].Data;
+            return ref _denseItems[_sparseItems[entity]];
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
@@ -124,23 +131,26 @@ namespace Leopotam.EcsLite {
 #if DEBUG
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
-            return _items[entity].Attached != 0;
+            return _sparseItems[entity] > 0;
         }
 
-        [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public void Del (int entity) {
 #if DEBUG
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
-            ref var itemData = ref _items[entity];
-            if (itemData.Attached != 0) {
+            ref var sparseData = ref _sparseItems[entity];
+            if (sparseData > 0) {
                 _world.OnEntityChange (entity, _id, false);
-                itemData.Attached = 0;
-                if (_autoReset != null) {
-                    _autoReset.Invoke (ref _items[entity].Data);
-                } else {
-                    itemData.Data = default;
+                if (_recycledItemsCount == _recycledItems.Length) {
+                    Array.Resize (ref _recycledItems, _recycledItemsCount << 1);
                 }
+                _recycledItems[_recycledItemsCount++] = sparseData;
+                if (_autoReset != null) {
+                    _autoReset.Invoke (ref _denseItems[sparseData]);
+                } else {
+                    _denseItems[sparseData] = default;
+                }
+                sparseData = 0;
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
                 _world.RaiseEntityChangeEvent (entity);
 #endif
@@ -150,11 +160,6 @@ namespace Leopotam.EcsLite {
                     _world.DelEntity (entity);
                 }
             }
-        }
-
-        public struct PoolItem {
-            public byte Attached;
-            public T Data;
         }
 
         delegate void AutoResetHandler (ref T component);
