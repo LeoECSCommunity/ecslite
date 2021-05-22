@@ -85,11 +85,15 @@ namespace Leopotam.EcsLite {
         }
 
         object IEcsPool.GetRaw (int entity) {
-            return _denseItems[_sparseItems[entity] - 1];
+            return _denseItems[_sparseItems[entity]];
         }
 
-        public T[] GetRawItems () {
+        public T[] GetRawDenseItems () {
             return _denseItems;
+        }
+
+        public int[] GetRawSparseItems () {
+            return _sparseItems;
         }
 
         public ref T Add (int entity) {
