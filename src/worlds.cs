@@ -234,6 +234,11 @@ namespace Leopotam.EcsLite {
             return pool;
         }
 
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public IEcsPool GetPoolById (int typeId) {
+            return typeId >= 0 && typeId < _poolsCount ? _pools[typeId] : null;
+        }
+
         public int GetAllEntities (ref int[] entities) {
             var count = _entitiesCount - _recycledEntitiesCount;
             if (entities == null || entities.Length < count) {

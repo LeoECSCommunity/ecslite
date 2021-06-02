@@ -12,11 +12,12 @@ using Unity.IL2CPP.CompilerServices;
 #endif
 
 namespace Leopotam.EcsLite {
-    interface IEcsPool {
+    public interface IEcsPool {
         void Resize (int capacity);
         bool Has (int entity);
         void Del (int entity);
         object GetRaw (int entity);
+        int GetId ();
     }
 
     public interface IEcsAutoReset<T> where T : struct {
@@ -76,7 +77,7 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        internal int GetId () {
+        public int GetId () {
             return _id;
         }
 
