@@ -45,7 +45,7 @@ By default last released version will be used. If you need trunk / developing ve
 ```
 
 ## As source
-If you can't / don't want to use unity modules, code can be downloaded as sources archive of required release from [Releases page](`https://github.com/Leopotam/ecslite/releases`).
+If you can't / don't want to use unity modules, code can be cloned or downloaded as archive from `releases` page.
 
 # Main parts of ecs
 
@@ -284,6 +284,7 @@ class EcsStartup {
 # Extensions
 * [Extended filters support](https://github.com/Leopotam/ecslite-extendedfilters)
 * [Threads support](https://github.com/Leopotam/ecslite-threads)
+* [Unity editor integration](https://github.com/Leopotam/ecslite-unityeditor)
 * [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity)
 * [UniLeo - Unity scene data converter](https://github.com/voody2506/UniLeo-Lite)
 

@@ -57,7 +57,7 @@ namespace Leopotam.EcsLite {
         public T GetShared<T> () where T : class {
             return _shared as T;
         }
-        
+
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public EcsWorld GetWorld (string name = null) {
             if (name == null) {
@@ -91,6 +91,9 @@ namespace Leopotam.EcsLite {
         }
 
         public EcsSystems AddWorld (EcsWorld world, string name) {
+#if DEBUG
+            if (string.IsNullOrEmpty (name)) { throw new System.Exception ("World name cant be null or empty."); }
+#endif
             _worlds[name] = world;
             return this;
         }
