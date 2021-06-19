@@ -217,6 +217,11 @@ namespace Leopotam.EcsLite {
             return _entitiesCount;
         }
 
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public int GetWorldSize () {
+            return Entities.Length;
+        }
+
         public EcsPool<T> GetPool<T> () where T : struct {
             var poolType = typeof (EcsPool<T>);
             if (_poolHashes.TryGetValue (poolType, out var rawPool)) {
