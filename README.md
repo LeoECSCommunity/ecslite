@@ -285,6 +285,7 @@ class EcsStartup {
 * [Extended filters support](https://github.com/Leopotam/ecslite-extendedfilters)
 * [Threads support](https://github.com/Leopotam/ecslite-threads)
 * [Unity editor integration](https://github.com/Leopotam/ecslite-unityeditor)
+* [Unity uGui bindings](https://github.com/Leopotam/ecslite-unity-ugui)
 * [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity)
 * [UniLeo - Unity scene data converter](https://github.com/voody2506/UniLeo-Lite)
 
