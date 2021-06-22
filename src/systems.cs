@@ -53,11 +53,35 @@ namespace Leopotam.EcsLite {
             _allSystems = new List<IEcsSystem> (128);
         }
 
+        public int GetAllSystems (ref IEcsSystem[] list) {
+            var itemsCount = _allSystems.Count;
+            if (itemsCount == 0) { return 0; }
+            if (list == null || list.Length < itemsCount) {
+                list = new IEcsSystem[_allSystems.Capacity];
+            }
+            for (int i = 0, iMax = itemsCount; i < iMax; i++) {
+                list[i++] = _allSystems[i];
+            }
+            return itemsCount;
+        }
+
+        public int GetRunSystems (ref IEcsRunSystem[] list) {
+            var itemsCount = _runSystemsCount;
+            if (itemsCount == 0) { return 0; }
+            if (list == null || list.Length < itemsCount) {
+                list = new IEcsRunSystem[_runSystems.Length];
+            }
+            for (int i = 0, iMax = itemsCount; i < iMax; i++) {
+                list[i++] = _runSystems[i];
+            }
+            return itemsCount;
+        }
+
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public T GetShared<T> () where T : class {
             return _shared as T;
         }
-        
+
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public EcsWorld GetWorld (string name = null) {
             if (name == null) {
@@ -91,6 +115,9 @@ namespace Leopotam.EcsLite {
         }
 
         public EcsSystems AddWorld (EcsWorld world, string name) {
+#if DEBUG
+            if (string.IsNullOrEmpty (name)) { throw new System.Exception ("World name cant be null or empty."); }
+#endif
             _worlds[name] = world;
             return this;
         }

@@ -12,11 +12,13 @@ using Unity.IL2CPP.CompilerServices;
 #endif
 
 namespace Leopotam.EcsLite {
-    interface IEcsPool {
+    public interface IEcsPool {
         void Resize (int capacity);
         bool Has (int entity);
         void Del (int entity);
         object GetRaw (int entity);
+        int GetId ();
+        Type GetComponentType ();
     }
 
     public interface IEcsAutoReset<T> where T : struct {
@@ -28,6 +30,7 @@ namespace Leopotam.EcsLite {
     [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
 #endif
     public sealed class EcsPool<T> : IEcsPool where T : struct {
+        readonly Type _type;
         readonly EcsWorld _world;
         readonly int _id;
         readonly AutoResetHandler _autoReset;
@@ -42,6 +45,7 @@ namespace Leopotam.EcsLite {
 #endif
 
         internal EcsPool (EcsWorld world, int id, int denseCapacity, int sparseCapacity) {
+            _type = typeof (T);
             _world = world;
             _id = id;
             _denseItems = new T[denseCapacity + 1];
@@ -49,10 +53,9 @@ namespace Leopotam.EcsLite {
             _denseItemsCount = 1;
             _recycledItems = new int[512];
             _recycledItemsCount = 0;
-            var type = typeof (T);
-            var isAutoReset = typeof (IEcsAutoReset<T>).IsAssignableFrom (type);
+            var isAutoReset = typeof (IEcsAutoReset<T>).IsAssignableFrom (_type);
 #if DEBUG
-            if (!isAutoReset && type.GetInterface ("IEcsAutoReset`1") != null) {
+            if (!isAutoReset && _type.GetInterface ("IEcsAutoReset`1") != null) {
                 throw new Exception ($"IEcsAutoReset should have <{typeof (T).Name}> constraint for component \"{typeof (T).Name}\".");
             }
 #endif
@@ -76,8 +79,13 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        internal int GetId () {
+        public int GetId () {
             return _id;
+        }
+
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public Type GetComponentType () {
+            return _type;
         }
 
         void IEcsPool.Resize (int capacity) {
@@ -155,11 +163,11 @@ namespace Leopotam.EcsLite {
                     _denseItems[sparseData] = default;
                 }
                 sparseData = 0;
+                ref var entityData = ref _world.Entities[entity];
+                entityData.ComponentsCount--;
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
                 _world.RaiseEntityChangeEvent (entity);
 #endif
-                ref var entityData = ref _world.Entities[entity];
-                entityData.ComponentsCount--;
                 if (entityData.ComponentsCount == 0) {
                     _world.DelEntity (entity);
                 }

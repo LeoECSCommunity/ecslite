@@ -217,6 +217,11 @@ namespace Leopotam.EcsLite {
             return _entitiesCount;
         }
 
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public int GetWorldSize () {
+            return Entities.Length;
+        }
+
         public EcsPool<T> GetPool<T> () where T : struct {
             var poolType = typeof (EcsPool<T>);
             if (_poolHashes.TryGetValue (poolType, out var rawPool)) {
@@ -232,6 +237,11 @@ namespace Leopotam.EcsLite {
             }
             _pools[_poolsCount++] = pool;
             return pool;
+        }
+
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public IEcsPool GetPoolById (int typeId) {
+            return typeId >= 0 && typeId < _poolsCount ? _pools[typeId] : null;
         }
 
         public int GetAllEntities (ref int[] entities) {
@@ -257,12 +267,27 @@ namespace Leopotam.EcsLite {
 
         public int GetComponents (int entity, ref object[] list) {
             var itemsCount = Entities[entity].ComponentsCount;
+            if (itemsCount == 0) { return 0; }
             if (list == null || list.Length < itemsCount) {
-                list = new object[itemsCount];
+                list = new object[_pools.Length];
             }
             for (int i = 0, j = 0, iMax = _poolsCount; i < iMax; i++) {
                 if (_pools[i].Has (entity)) {
                     list[j++] = _pools[i].GetRaw (entity);
+                }
+            }
+            return itemsCount;
+        }
+
+        public int GetComponentTypes (int entity, ref Type[] list) {
+            var itemsCount = Entities[entity].ComponentsCount;
+            if (itemsCount == 0) { return 0; }
+            if (list == null || list.Length < itemsCount) {
+                list = new Type[_pools.Length];
+            }
+            for (int i = 0, j = 0, iMax = _poolsCount; i < iMax; i++) {
+                if (_pools[i].Has (entity)) {
+                    list[j++] = _pools[i].GetComponentType ();
                 }
             }
             return itemsCount;
