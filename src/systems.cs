@@ -60,7 +60,7 @@ namespace Leopotam.EcsLite {
                 list = new IEcsSystem[_allSystems.Capacity];
             }
             for (int i = 0, iMax = itemsCount; i < iMax; i++) {
-                list[i++] = _allSystems[i];
+                list[i] = _allSystems[i];
             }
             return itemsCount;
         }
@@ -72,7 +72,7 @@ namespace Leopotam.EcsLite {
                 list = new IEcsRunSystem[_runSystems.Length];
             }
             for (int i = 0, iMax = itemsCount; i < iMax; i++) {
-                list[i++] = _runSystems[i];
+                list[i] = _runSystems[i];
             }
             return itemsCount;
         }
