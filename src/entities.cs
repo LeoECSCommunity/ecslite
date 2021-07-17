@@ -46,11 +46,14 @@ namespace Leopotam.EcsLite {
             if (Id == 0 && Gen == 0) { return "Entity-Null"; }
             if (World == null || !World.IsAlive () || !World.IsEntityAliveInternal (Id) || World.GetEntityGen (Id) != Gen) { return "Entity-NonAlive"; }
             System.Type[] types = null;
-            World.GetComponentTypes (Id, ref types);
-            var sb = new System.Text.StringBuilder (512);
-            foreach (var type in types) {
-                if (sb.Length > 0) { sb.Append (","); }
-                sb.Append (type.Name);
+            var count = World.GetComponentTypes (Id, ref types);
+            System.Text.StringBuilder sb = null;
+            if (count > 0) {
+                sb = new System.Text.StringBuilder (512);
+                for (var i = 0; i < count; i++) {
+                    if (sb.Length > 0) { sb.Append (","); }
+                    sb.Append (types[i].Name);
+                }
             }
             return $"Entity-{Id}:{Gen} [{sb}]";
         }
