@@ -173,7 +173,7 @@ namespace Leopotam.EcsLite {
         }
 
 #if DEBUG
-        string CheckForLeakedEntities () {
+        public string CheckForLeakedEntities () {
             if (_defaultWorld.CheckForLeakedEntities ()) { return "default"; }
             foreach (var pair in _worlds) {
                 if (pair.Value.CheckForLeakedEntities ()) {
