@@ -247,13 +247,6 @@ class EcsStartup {
             // register your systems here, for example:
             // .Add (new TestSystem1 ())
             // .Add (new TestSystem2 ())
-            
-            // register components for removing here
-            // position in registration is important,
-            // should be after all AddWorld() registration, for example:
-            // .DelHere<TestComponent1> ()
-            // .DelHere<TestComponent2> ("events")
-            
             .Init ();
     }
 
@@ -282,7 +275,8 @@ class EcsStartup {
   [![](https://camo.githubusercontent.com/dcd2f525130d73f4688c1f1cfb12f6e37d166dae23a1c6fac70e5b7873c3ab21/68747470733a2f2f692e6962622e636f2f686d374c726d342f506c6174666f726d65722e706e67)](https://github.com/supremestranger/3D-Platformer-Lite)
 
 # Extensions
-* [Extended filters support](https://github.com/Leopotam/ecslite-extendedfilters)
+* [Extended filters](https://github.com/Leopotam/ecslite-extendedfilters)
+* [Extended systems](https://github.com/Leopotam/ecslite-extendedsystems)
 * [Threads support](https://github.com/Leopotam/ecslite-threads)
 * [Unity editor integration](https://github.com/Leopotam/ecslite-unityeditor)
 * [Unity uGui bindings](https://github.com/Leopotam/ecslite-unity-ugui)
@@ -336,32 +330,6 @@ struct MyComponent : IEcsAutoReset<MyComponent> {
 ```
 This method will be automatically called for brand new component instance and after component removing from entity and before recycling to component pool.
 > Important: With custom `AutoReset` behaviour there are no any additional checks for reference-type fields, you should provide correct cleanup/init behaviour without possible memory leaks.
-
-### I use components as events that work only one frame, then remove it at last system in execution sequence. It's boring, how can I automate it?
-
-If you want to remove one-frame components without additional custom code, you can register them at `EcsSystems`:
-```csharp
-struct MyOneFrameComponent { }
-
-EcsSystems _update;
-
-void Start () {
-    EcsWorld world = new EcsWorld ();
-    _update = new EcsSystems (world);
-    _update
-        .Add (new CalculateSystem ())
-        .Add (new UpdateSystem ())
-        .DelHere<MyOneFrameComponent> ()
-        .Init ();
-}
-
-void Update () {
-    _update.Run ();
-}
-```
-
-> important: All one-frame components should be registered with `DelHere()` after all worlds registration through `AddWorld()`.
-> Important: All one-frame components with specified type will be removed at position in execution flow where this component was registered with `DelHere()` call.
 
 ### I want to keep references to entities in components, but entity can be killed at any system and I need protection from reusing the same ID. How can I do it?
 

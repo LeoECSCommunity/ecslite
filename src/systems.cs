@@ -167,11 +167,7 @@ namespace Leopotam.EcsLite {
 #endif
             }
         }
-
-        public EcsSystems DelHere<T> (string worldName = null) where T : struct {
-            return Add (new DelHereSystem<T> (GetWorld (worldName)));
-        }
-
+        
 #if DEBUG
         public string CheckForLeakedEntities () {
             if (_defaultWorld.CheckForLeakedEntities ()) { return "default"; }
@@ -183,25 +179,5 @@ namespace Leopotam.EcsLite {
             return null;
         }
 #endif
-    }
-
-#if ENABLE_IL2CPP
-    [Il2CppSetOption (Option.NullChecks, false)]
-    [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
-#endif
-    sealed class DelHereSystem<T> : IEcsRunSystem where T : struct {
-        readonly EcsFilter _filter;
-        readonly EcsPool<T> _pool;
-
-        public DelHereSystem (EcsWorld world) {
-            _filter = world.Filter<T> ().End ();
-            _pool = world.GetPool<T> ();
-        }
-
-        public void Run (EcsSystems systems) {
-            foreach (var entity in _filter) {
-                _pool.Del (entity);
-            }
-        }
     }
 }
