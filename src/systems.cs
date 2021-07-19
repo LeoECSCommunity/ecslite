@@ -53,6 +53,10 @@ namespace Leopotam.EcsLite {
             _allSystems = new List<IEcsSystem> (128);
         }
 
+        public Dictionary<string, EcsWorld> GetAllNamedWorlds () {
+            return _worlds;
+        }
+
         public int GetAllSystems (ref IEcsSystem[] list) {
             var itemsCount = _allSystems.Count;
             if (itemsCount == 0) { return 0; }
@@ -167,7 +171,7 @@ namespace Leopotam.EcsLite {
 #endif
             }
         }
-        
+
 #if DEBUG
         public string CheckForLeakedEntities () {
             if (_defaultWorld.CheckForLeakedEntities ()) { return "default"; }
