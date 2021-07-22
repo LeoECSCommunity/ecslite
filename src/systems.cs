@@ -53,6 +53,10 @@ namespace Leopotam.EcsLite {
             _allSystems = new List<IEcsSystem> (128);
         }
 
+        public Dictionary<string, EcsWorld> GetAllNamedWorlds () {
+            return _worlds;
+        }
+
         public int GetAllSystems (ref IEcsSystem[] list) {
             var itemsCount = _allSystems.Count;
             if (itemsCount == 0) { return 0; }
@@ -60,7 +64,7 @@ namespace Leopotam.EcsLite {
                 list = new IEcsSystem[_allSystems.Capacity];
             }
             for (int i = 0, iMax = itemsCount; i < iMax; i++) {
-                list[i++] = _allSystems[i];
+                list[i] = _allSystems[i];
             }
             return itemsCount;
         }
@@ -72,7 +76,7 @@ namespace Leopotam.EcsLite {
                 list = new IEcsRunSystem[_runSystems.Length];
             }
             for (int i = 0, iMax = itemsCount; i < iMax; i++) {
-                list[i++] = _runSystems[i];
+                list[i] = _runSystems[i];
             }
             return itemsCount;
         }
@@ -168,12 +172,8 @@ namespace Leopotam.EcsLite {
             }
         }
 
-        public EcsSystems DelHere<T> (string worldName = null) where T : struct {
-            return Add (new DelHereSystem<T> (GetWorld (worldName)));
-        }
-
 #if DEBUG
-        string CheckForLeakedEntities () {
+        public string CheckForLeakedEntities () {
             if (_defaultWorld.CheckForLeakedEntities ()) { return "default"; }
             foreach (var pair in _worlds) {
                 if (pair.Value.CheckForLeakedEntities ()) {
@@ -183,25 +183,5 @@ namespace Leopotam.EcsLite {
             return null;
         }
 #endif
-    }
-
-#if ENABLE_IL2CPP
-    [Il2CppSetOption (Option.NullChecks, false)]
-    [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
-#endif
-    sealed class DelHereSystem<T> : IEcsRunSystem where T : struct {
-        readonly EcsFilter _filter;
-        readonly EcsPool<T> _pool;
-
-        public DelHereSystem (EcsWorld world) {
-            _filter = world.Filter<T> ().End ();
-            _pool = world.GetPool<T> ();
-        }
-
-        public void Run (EcsSystems systems) {
-            foreach (var entity in _filter) {
-                _pool.Del (entity);
-            }
-        }
     }
 }

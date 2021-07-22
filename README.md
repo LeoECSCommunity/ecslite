@@ -3,7 +3,7 @@ Performance, zero/small memory allocations/footprint, no dependencies on any gam
 
 > **Important!** Don't forget to use `DEBUG` builds for development and `RELEASE` builds in production: all internal error checks / exception throwing works only in `DEBUG` builds and eleminated for performance reasons in `RELEASE`.
 
-> **Important!** LeoEcsLite API **is not tread safe** and will never be! If you need multithread-processing - you should implement it on your side as part of ecs-system.
+> **Important!** LeoEcsLite API **is not thread safe** and will never be! If you need multithread-processing - you should implement it on your side as part of ecs-system.
 
 # Table of content
 * [Socials](#socials)
@@ -247,13 +247,6 @@ class EcsStartup {
             // register your systems here, for example:
             // .Add (new TestSystem1 ())
             // .Add (new TestSystem2 ())
-            
-            // register components for removing here
-            // position in registration is important,
-            // should be after all AddWorld() registration, for example:
-            // .DelHere<TestComponent1> ()
-            // .DelHere<TestComponent2> ("events")
-            
             .Init ();
     }
 
@@ -282,7 +275,8 @@ class EcsStartup {
   [![](https://camo.githubusercontent.com/dcd2f525130d73f4688c1f1cfb12f6e37d166dae23a1c6fac70e5b7873c3ab21/68747470733a2f2f692e6962622e636f2f686d374c726d342f506c6174666f726d65722e706e67)](https://github.com/supremestranger/3D-Platformer-Lite)
 
 # Extensions
-* [Extended filters support](https://github.com/Leopotam/ecslite-extendedfilters)
+* [Extended filters](https://github.com/Leopotam/ecslite-extendedfilters)
+* [Extended systems](https://github.com/Leopotam/ecslite-extendedsystems)
 * [Threads support](https://github.com/Leopotam/ecslite-threads)
 * [Unity editor integration](https://github.com/Leopotam/ecslite-unityeditor)
 * [Unity uGui bindings](https://github.com/Leopotam/ecslite-unity-ugui)
@@ -295,6 +289,22 @@ The software is released under the terms of the [MIT license](./LICENSE.md).
 No personal support or any guarantees.
 
 # FAQ
+
+### What is the difference from Ecs-full?
+
+I prefer to name them `lite` (ecs-lite) and `classic` (ecs-full). Main differences between them (based on `lite`):
+* Codebase decreased in 2 times (easier to maintain and extend).
+* No any static data in core anymore (except pooling for filter dynamic building feature, can be removed).
+* No caches for components in filter (less memory consuming).
+* Fast access to any component on any entity (with performance of cached filter components in `classic`).
+* No limits to amount of filter contraints (filter is not generic class anymore).
+* Performance is similar to `classic`, maybe slightly better in some cases (worse in some corner cases on very huge amount of data).
+* Oriented to using multiple worlds at same time (can be useful for keep memory consuming low on huge amount of short living components like "events").
+* No reflection in runtime (can be used with aggressive code stripping).
+* No data injection through reflection (you can use custom shared class between systems with required data).
+* Entities switched back to `int` (memory consuming decreased). Saving entity as component field supported through packing to `classic` `EcsEntity`-similar struct.
+* Small core, all new features can be added through extension repos.
+* All new features will be added to `lite` only, `classic` looks stable and mature enough - no new features, bugfixes only.
 
 ### I want to process one system at MonoBehaviour.Update() and another - at MonoBehaviour.FixedUpdate(). How can I do it?
 
@@ -336,32 +346,6 @@ struct MyComponent : IEcsAutoReset<MyComponent> {
 ```
 This method will be automatically called for brand new component instance and after component removing from entity and before recycling to component pool.
 > Important: With custom `AutoReset` behaviour there are no any additional checks for reference-type fields, you should provide correct cleanup/init behaviour without possible memory leaks.
-
-### I use components as events that work only one frame, then remove it at last system in execution sequence. It's boring, how can I automate it?
-
-If you want to remove one-frame components without additional custom code, you can register them at `EcsSystems`:
-```csharp
-struct MyOneFrameComponent { }
-
-EcsSystems _update;
-
-void Start () {
-    EcsWorld world = new EcsWorld ();
-    _update = new EcsSystems (world);
-    _update
-        .Add (new CalculateSystem ())
-        .Add (new UpdateSystem ())
-        .DelHere<MyOneFrameComponent> ()
-        .Init ();
-}
-
-void Update () {
-    _update.Run ();
-}
-```
-
-> important: All one-frame components should be registered with `DelHere()` after all worlds registration through `AddWorld()`.
-> Important: All one-frame components with specified type will be removed at position in execution flow where this component was registered with `DelHere()` call.
 
 ### I want to keep references to entities in components, but entity can be killed at any system and I need protection from reusing the same ID. How can I do it?
 
