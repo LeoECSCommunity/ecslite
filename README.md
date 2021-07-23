@@ -80,7 +80,7 @@ class UserSystem : IEcsPreInitSystem, IEcsInitSystem, IEcsRunSystem, IEcsDestroy
     }
     
     public void Init (EcsSystems systems) {
-        // Will be called once during EcsSystems.Init() call and after IEcsInitSystem.PreInit().
+        // Will be called once during EcsSystems.Init() call and after IEcsPreInitSystem.PreInit().
     }
     
     public void Run (EcsSystems systems) {
@@ -88,11 +88,11 @@ class UserSystem : IEcsPreInitSystem, IEcsInitSystem, IEcsRunSystem, IEcsDestroy
     }
 
     public void Destroy (EcsSystems systems) {
-        // Will be called once during EcsSystems.Destroy() call and before IEcsInitSystem.PostDestroy().
+        // Will be called once during EcsSystems.Destroy() call and before IEcsPostDestroySystem.PostDestroy().
     }
     
     public void PostDestroy (EcsSystems systems) {
-        // Will be called once during EcsSystems.Destroy() call and after IEcsInitSystem.Destroy().
+        // Will be called once during EcsSystems.Destroy() call and after IEcsDestroySystem.Destroy().
     }
 }
 ```
