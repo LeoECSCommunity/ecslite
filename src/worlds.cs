@@ -222,6 +222,9 @@ namespace Leopotam.EcsLite {
             return Entities.Length;
         }
 
+#if UNITY_2020_3_OR_NEWER
+        [UnityEngine.Scripting.Preserve]
+#endif
         public EcsPool<T> GetPool<T> () where T : struct {
             var poolType = typeof (EcsPool<T>);
             if (_poolHashes.TryGetValue (poolType, out var rawPool)) {
@@ -260,6 +263,9 @@ namespace Leopotam.EcsLite {
             return count;
         }
 
+#if UNITY_2020_3_OR_NEWER
+        [UnityEngine.Scripting.Preserve]
+#endif
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public EcsFilter.Mask Filter<T> () where T : struct {
             return EcsFilter.Mask.New (this).Inc<T> ();
