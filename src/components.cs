@@ -77,6 +77,11 @@ namespace Leopotam.EcsLite {
                     autoResetMethod);
             }
         }
+        
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public EcsWorld GetWorld () {
+            return _world;
+        }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public int GetId () {
