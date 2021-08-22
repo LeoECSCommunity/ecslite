@@ -273,6 +273,8 @@ class EcsStartup {
 ## With sources
 * ["3D Platformer"](https://github.com/supremestranger/3D-Platformer-Lite)
   [![](https://camo.githubusercontent.com/dcd2f525130d73f4688c1f1cfb12f6e37d166dae23a1c6fac70e5b7873c3ab21/68747470733a2f2f692e6962622e636f2f686d374c726d342f506c6174666f726d65722e706e67)](https://github.com/supremestranger/3D-Platformer-Lite)
+* ["SharpPhysics2D"](https://github.com/7Bpencil/sharpPhysics)
+  [![](https://github.com/7Bpencil/sharpPhysics/raw/master/pictures/preview.png)](https://github.com/7Bpencil/sharpPhysics)
 
 # Extensions
 * [Dependency injection](https://github.com/Leopotam/ecslite-di)
@@ -284,7 +286,6 @@ class EcsStartup {
 * [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity)
 * [UniLeo - Unity scene data converter](https://github.com/voody2506/UniLeo-Lite)
 * [Unity Physx events support](https://github.com/supremestranger/leoecs-lite-physics)
-* [SharpPhysics2D](https://github.com/7Bpencil/sharpPhysics)
 
 # License
 The software is released under the terms of the [MIT license](./LICENSE.md).
