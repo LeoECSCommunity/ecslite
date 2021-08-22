@@ -284,6 +284,7 @@ class EcsStartup {
 * [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity)
 * [UniLeo - Unity scene data converter](https://github.com/voody2506/UniLeo-Lite)
 * [Unity Physx events support](https://github.com/supremestranger/leoecs-lite-physics)
+* [SharpPhysics2D](https://github.com/7Bpencil/sharpPhysics)
 
 # License
 The software is released under the terms of the [MIT license](./LICENSE.md).
