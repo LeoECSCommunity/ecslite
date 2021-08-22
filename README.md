@@ -80,7 +80,7 @@ class UserSystem : IEcsPreInitSystem, IEcsInitSystem, IEcsRunSystem, IEcsDestroy
     }
     
     public void Init (EcsSystems systems) {
-        // Will be called once during EcsSystems.Init() call and after IEcsInitSystem.PreInit().
+        // Will be called once during EcsSystems.Init() call and after IEcsPreInitSystem.PreInit().
     }
     
     public void Run (EcsSystems systems) {
@@ -88,11 +88,11 @@ class UserSystem : IEcsPreInitSystem, IEcsInitSystem, IEcsRunSystem, IEcsDestroy
     }
 
     public void Destroy (EcsSystems systems) {
-        // Will be called once during EcsSystems.Destroy() call and before IEcsInitSystem.PostDestroy().
+        // Will be called once during EcsSystems.Destroy() call and before IEcsPostDestroySystem.PostDestroy().
     }
     
     public void PostDestroy (EcsSystems systems) {
-        // Will be called once during EcsSystems.Destroy() call and after IEcsInitSystem.Destroy().
+        // Will be called once during EcsSystems.Destroy() call and after IEcsDestroySystem.Destroy().
     }
 }
 ```
@@ -275,6 +275,7 @@ class EcsStartup {
   [![](https://camo.githubusercontent.com/dcd2f525130d73f4688c1f1cfb12f6e37d166dae23a1c6fac70e5b7873c3ab21/68747470733a2f2f692e6962622e636f2f686d374c726d342f506c6174666f726d65722e706e67)](https://github.com/supremestranger/3D-Platformer-Lite)
 
 # Extensions
+* [Dependency injection](https://github.com/Leopotam/ecslite-di)
 * [Extended filters](https://github.com/Leopotam/ecslite-extendedfilters)
 * [Extended systems](https://github.com/Leopotam/ecslite-extendedsystems)
 * [Threads support](https://github.com/Leopotam/ecslite-threads)
@@ -282,6 +283,7 @@ class EcsStartup {
 * [Unity uGui bindings](https://github.com/Leopotam/ecslite-unity-ugui)
 * [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity)
 * [UniLeo - Unity scene data converter](https://github.com/voody2506/UniLeo-Lite)
+* [Unity Physx events support](https://github.com/supremestranger/leoecs-lite-physics)
 
 # License
 The software is released under the terms of the [MIT license](./LICENSE.md).

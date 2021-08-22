@@ -78,6 +78,19 @@ namespace Leopotam.EcsLite {
             }
         }
 
+#if UNITY_2020_3_OR_NEWER
+        [UnityEngine.Scripting.Preserve]
+#endif
+        void ReflectionSupportHack () {
+            _world.GetPool<T> ();
+            _world.Filter<T> ().Exc<T> ().End ();
+        }
+
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public EcsWorld GetWorld () {
+            return _world;
+        }
+
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public int GetId () {
             return _id;

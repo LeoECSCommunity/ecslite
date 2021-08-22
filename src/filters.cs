@@ -201,6 +201,9 @@ namespace Leopotam.EcsLite {
                 return this;
             }
 
+#if UNITY_2020_3_OR_NEWER
+            [UnityEngine.Scripting.Preserve]
+#endif
             [MethodImpl (MethodImplOptions.AggressiveInlining)]
             public Mask Exc<T> () where T : struct {
                 var poolId = _world.GetPool<T> ().GetId ();
