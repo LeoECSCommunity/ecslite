@@ -253,7 +253,7 @@ namespace Leopotam.EcsLite {
             for (int i = 0, iMax = _entitiesCount; i < iMax; i++) {
                 ref var entityData = ref Entities[i];
                 // should we skip empty entities here?
-                if (entityData.ComponentsCount >= 0) {
+                if (entityData.Gen > 0 && entityData.ComponentsCount >= 0) {
                     entities[id++] = i;
                 }
             }
