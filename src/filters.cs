@@ -51,6 +51,11 @@ namespace Leopotam.EcsLite {
         public int[] GetRawEntities () {
             return _denseEntities;
         }
+        
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public int[] GetSparseIndex () {
+            return SparseEntities;
+        }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator () {
