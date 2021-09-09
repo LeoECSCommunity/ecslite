@@ -16,6 +16,7 @@ namespace Leopotam.EcsLite {
         void Resize (int capacity);
         bool Has (int entity);
         void Del (int entity);
+        void AddRaw (int entity, object dataRaw);
         object GetRaw (int entity);
         int GetId ();
         Type GetComponentType ();
@@ -106,7 +107,15 @@ namespace Leopotam.EcsLite {
         }
 
         object IEcsPool.GetRaw (int entity) {
-            return _denseItems[_sparseItems[entity]];
+            return Get (entity);
+        }
+
+        void IEcsPool.AddRaw (int entity, object dataRaw) {
+#if DEBUG
+            if (dataRaw == null || dataRaw.GetType () != _type) { throw new Exception ("Invalid component data."); }
+#endif
+            ref var data = ref Add (entity);
+            data = (T) dataRaw;
         }
 
         public T[] GetRawDenseItems () {
