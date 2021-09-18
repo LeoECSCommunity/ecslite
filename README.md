@@ -403,3 +403,24 @@ var world = new EcsWorld ();
 var listener = new TestWorldEventListener ();
 world.AddEventListener (listener);
 ``` 
+
+### I want to add some reactive behaviour on filter changes, how I can do it?
+
+You can use `LEOECSLITE_FILTER_EVENTS` definition to enable custom event listeners support on filters:
+
+```csharp
+class TestFilterEventListener : IEcsFilterEventListener {
+    public void OnEntityAdded (int entity) {
+        // entity added to filter.
+    }
+
+    public void OnEntityRemoved (int entity) {
+        // entity removed from filter.
+    }
+}
+...
+var world = new EcsWorld ();
+var filter = world.Filter<C1> ().End ();
+var listener = new TestFilterEventListener ();
+filter.AddEventListener (listener);
+``` 
