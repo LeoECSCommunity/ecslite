@@ -12,6 +12,12 @@ using Unity.IL2CPP.CompilerServices;
 #endif
 
 namespace Leopotam.EcsLite {
+#if LEOECSLITE_FILTER_EVENTS
+    public interface IEcsFilterEventListener {
+        void OnEntityAdded (int entity);
+        void OnEntityRemoved (int entity);
+    }
+#endif
 #if ENABLE_IL2CPP
     [Il2CppSetOption (Option.NullChecks, false)]
     [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
@@ -25,6 +31,10 @@ namespace Leopotam.EcsLite {
         int _lockCount;
         DelayedOp[] _delayedOps;
         int _delayedOpsCount;
+#if LEOECSLITE_FILTER_EVENTS
+        IEcsFilterEventListener[] _eventListeners = new IEcsFilterEventListener[4];
+        int _eventListenersCount;
+#endif
 
         internal EcsFilter (EcsWorld world, Mask mask, int denseCapacity, int sparseCapacity) {
             _world = world;
@@ -53,10 +63,42 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public int[] GetSparseIndex () {
+            return SparseEntities;
+        }
+
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator () {
             _lockCount++;
             return new Enumerator (this);
         }
+
+#if LEOECSLITE_FILTER_EVENTS
+        public void AddEventListener (IEcsFilterEventListener eventListener) {
+#if DEBUG
+            for (var i = 0; i < _eventListenersCount; i++) {
+                if (_eventListeners[i] == eventListener) {
+                    throw new Exception ("Listener already subscribed.");
+                }
+            }
+#endif
+            if (_eventListeners.Length == _eventListenersCount) {
+                Array.Resize (ref _eventListeners, _eventListenersCount << 1);
+            }
+            _eventListeners[_eventListenersCount++] = eventListener;
+        }
+
+        public void RemoveEventListener (IEcsFilterEventListener eventListener) {
+            for (var i = 0; i < _eventListenersCount; i++) {
+                if (_eventListeners[i] == eventListener) {
+                    _eventListenersCount--;
+                    // cant fill gap with last element due listeners order is important.
+                    Array.Copy (_eventListeners, i + 1, _eventListeners, i, _eventListenersCount - i);
+                    break;
+                }
+            }
+        }
+#endif
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         internal void ResizeSparseIndex (int capacity) {
@@ -76,6 +118,9 @@ namespace Leopotam.EcsLite {
             }
             _denseEntities[_entitiesCount++] = entity;
             SparseEntities[entity] = _entitiesCount;
+#if LEOECSLITE_FILTER_EVENTS
+            ProcessEventListeners (true, entity);
+#endif
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
@@ -88,6 +133,9 @@ namespace Leopotam.EcsLite {
                 _denseEntities[idx] = _denseEntities[_entitiesCount];
                 SparseEntities[_denseEntities[idx]] = idx + 1;
             }
+#if LEOECSLITE_FILTER_EVENTS
+            ProcessEventListeners (false, entity);
+#endif
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
@@ -122,6 +170,20 @@ namespace Leopotam.EcsLite {
                 _delayedOpsCount = 0;
             }
         }
+
+#if LEOECSLITE_FILTER_EVENTS
+        void ProcessEventListeners (bool isAdd, int entity) {
+            if (isAdd) {
+                for (var i = 0; i < _eventListenersCount; i++) {
+                    _eventListeners[i].OnEntityAdded (entity);
+                }
+            } else {
+                for (var i = 0; i < _eventListenersCount; i++) {
+                    _eventListeners[i].OnEntityRemoved (entity);
+                }
+            }
+        }
+#endif
 
         public struct Enumerator : IDisposable {
             readonly EcsFilter _filter;

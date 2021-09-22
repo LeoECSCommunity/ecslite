@@ -223,7 +223,7 @@ namespace Leopotam.EcsLite {
         }
 
         public EcsPool<T> GetPool<T> () where T : struct {
-            var poolType = typeof (EcsPool<T>);
+            var poolType = typeof (T);
             if (_poolHashes.TryGetValue (poolType, out var rawPool)) {
                 return (EcsPool<T>) rawPool;
             }
@@ -244,6 +244,11 @@ namespace Leopotam.EcsLite {
             return typeId >= 0 && typeId < _poolsCount ? _pools[typeId] : null;
         }
 
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public IEcsPool GetPoolByType (Type type) {
+            return _poolHashes.TryGetValue (type, out var pool) ? pool : null;
+        }
+
         public int GetAllEntities (ref int[] entities) {
             var count = _entitiesCount - _recycledEntitiesCount;
             if (entities == null || entities.Length < count) {
@@ -253,7 +258,7 @@ namespace Leopotam.EcsLite {
             for (int i = 0, iMax = _entitiesCount; i < iMax; i++) {
                 ref var entityData = ref Entities[i];
                 // should we skip empty entities here?
-                if (entityData.ComponentsCount >= 0) {
+                if (entityData.Gen > 0 && entityData.ComponentsCount >= 0) {
                     entities[id++] = i;
                 }
             }

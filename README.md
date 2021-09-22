@@ -273,6 +273,8 @@ class EcsStartup {
 ## With sources
 * ["3D Platformer"](https://github.com/supremestranger/3D-Platformer-Lite)
   [![](https://camo.githubusercontent.com/dcd2f525130d73f4688c1f1cfb12f6e37d166dae23a1c6fac70e5b7873c3ab21/68747470733a2f2f692e6962622e636f2f686d374c726d342f506c6174666f726d65722e706e67)](https://github.com/supremestranger/3D-Platformer-Lite)
+* ["SharpPhysics2D"](https://github.com/7Bpencil/sharpPhysics)
+  [![](https://github.com/7Bpencil/sharpPhysics/raw/master/pictures/preview.png)](https://github.com/7Bpencil/sharpPhysics)
 
 # Extensions
 * [Dependency injection](https://github.com/Leopotam/ecslite-di)
@@ -400,4 +402,25 @@ class TestWorldEventListener : IEcsWorldEventListener {
 var world = new EcsWorld ();
 var listener = new TestWorldEventListener ();
 world.AddEventListener (listener);
+``` 
+
+### I want to add some reactive behaviour on filter changes, how I can do it?
+
+You can use `LEOECSLITE_FILTER_EVENTS` definition to enable custom event listeners support on filters:
+
+```csharp
+class TestFilterEventListener : IEcsFilterEventListener {
+    public void OnEntityAdded (int entity) {
+        // entity added to filter.
+    }
+
+    public void OnEntityRemoved (int entity) {
+        // entity removed from filter.
+    }
+}
+...
+var world = new EcsWorld ();
+var filter = world.Filter<C1> ().End ();
+var listener = new TestFilterEventListener ();
+filter.AddEventListener (listener);
 ``` 
