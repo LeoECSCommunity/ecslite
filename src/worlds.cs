@@ -17,7 +17,7 @@ namespace Leopotam.EcsLite {
     [Il2CppSetOption (Option.NullChecks, false)]
     [Il2CppSetOption (Option.ArrayBoundsChecks, false)]
 #endif
-    public sealed class EcsWorld {
+    public class EcsWorld {
         internal EntityData[] Entities;
         int _entitiesCount;
         int[] _recycledEntities;
