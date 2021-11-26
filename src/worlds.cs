@@ -265,6 +265,15 @@ namespace Leopotam.EcsLite {
             return count;
         }
 
+        public int GetAllPools (ref IEcsPool[] pools) {
+            var count = _poolsCount;
+            if (pools == null || pools.Length < count) {
+                pools = new IEcsPool[count];
+            }
+            Array.Copy (_pools, 0, pools, 0, _poolsCount);
+            return _poolsCount;
+        }
+
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public EcsFilter.Mask Filter<T> () where T : struct {
             return EcsFilter.Mask.New (this).Inc<T> ();

@@ -4,7 +4,7 @@
     "displayName": "LeoECS Lite",
     "description": "LeoECS Lite is lightweight C# Entity Component System framework based on structs. Performance, zero/small memory allocations/footprint, no dependency on fucking Unity engine - main goals of this project.",
     "unity": "2020.3",
-    "version": "2021.11.22",
+    "version": "2021.12.22-preview",
     "keywords": [
         "leoecslite",
         "leoecs",
