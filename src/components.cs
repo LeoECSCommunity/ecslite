@@ -18,6 +18,7 @@ namespace Leopotam.EcsLite {
         void Del (int entity);
         void AddRaw (int entity, object dataRaw);
         object GetRaw (int entity);
+        void SetRaw (int entity, object dataRaw);
         int GetId ();
         Type GetComponentType ();
     }
@@ -110,6 +111,14 @@ namespace Leopotam.EcsLite {
             return Get (entity);
         }
 
+        void IEcsPool.SetRaw (int entity, object dataRaw) {
+#if DEBUG
+            if (dataRaw == null || dataRaw.GetType () != _type) { throw new Exception ("Invalid component data."); }
+            if (_sparseItems[entity] <= 0) { throw new Exception ("Component not attached to entity."); }
+#endif
+            _denseItems[_sparseItems[entity]] = (T) dataRaw;
+        }
+
         void IEcsPool.AddRaw (int entity, object dataRaw) {
 #if DEBUG
             if (dataRaw == null || dataRaw.GetType () != _type) { throw new Exception ("Invalid component data."); }
@@ -129,7 +138,7 @@ namespace Leopotam.EcsLite {
         public ref T Add (int entity) {
 #if DEBUG
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
-            if (_sparseItems[entity] > 0) { throw new Exception ("Already attached."); }
+            if (_sparseItems[entity] > 0) { throw new Exception ("Component already attached to entity."); }
 #endif
             int idx;
             if (_recycledItemsCount > 0) {
