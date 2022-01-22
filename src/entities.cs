@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------------
 // The MIT License
 // Lightweight ECS framework https://github.com/Leopotam/ecslite
-// Copyright (c) 2021 Leopotam <leopotam@gmail.com>
+// Copyright (c) 2021-2022 Leopotam <leopotam@gmail.com>
 // ----------------------------------------------------------------------------
 
 using System.Runtime.CompilerServices;
