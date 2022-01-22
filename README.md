@@ -273,8 +273,13 @@ class EcsStartup {
 ## With sources
 * ["3D Platformer"](https://github.com/supremestranger/3D-Platformer-Lite)
   [![](https://camo.githubusercontent.com/dcd2f525130d73f4688c1f1cfb12f6e37d166dae23a1c6fac70e5b7873c3ab21/68747470733a2f2f692e6962622e636f2f686d374c726d342f506c6174666f726d65722e706e67)](https://github.com/supremestranger/3D-Platformer-Lite)
+
+
 * ["SharpPhysics2D"](https://github.com/7Bpencil/sharpPhysics)
   [![](https://github.com/7Bpencil/sharpPhysics/raw/master/pictures/preview.png)](https://github.com/7Bpencil/sharpPhysics)
+
+
+* ["Busy ECS - extremely nice (and most likely slow) ECS framework"](https://github.com/kkolyan/busyecs)
 
 # Extensions
 * [Dependency injection](https://github.com/Leopotam/ecslite-di)
@@ -299,14 +304,14 @@ No personal support or any guarantees.
 
 I prefer to name them `lite` (ecs-lite) and `classic` (ecs-full). Main differences between them (based on `lite`):
 * Codebase decreased in 2 times (easier to maintain and extend).
-* No any static data in core anymore (except pooling for filter dynamic building feature, can be removed).
+* No any static data in core anymore.
 * No caches for components in filter (less memory consuming).
 * Fast access to any component on any entity (with performance of cached filter components in `classic`).
 * No limits to amount of filter contraints (filter is not generic class anymore).
 * Performance is similar to `classic`, maybe slightly better in some cases (worse in some corner cases on very huge amount of data).
 * Oriented to using multiple worlds at same time (can be useful for keep memory consuming low on huge amount of short living components like "events").
 * No reflection in runtime (can be used with aggressive code stripping).
-* No data injection through reflection (you can use custom shared class between systems with required data).
+* No data injection through reflection by default (you can use custom shared class between systems with required data or `ecslite-di` from extension's list).
 * Entities switched back to `int` (memory consuming decreased). Saving entity as component field supported through packing to `classic` `EcsEntity`-similar struct.
 * Small core, all new features can be added through extension repos.
 * All new features will be added to `lite` only, `classic` looks stable and mature enough - no new features, bugfixes only.
