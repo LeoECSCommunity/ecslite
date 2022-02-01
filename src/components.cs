@@ -131,8 +131,20 @@ namespace Leopotam.EcsLite {
             return _denseItems;
         }
 
+        public ref int GetRawDenseItemsCount () {
+            return ref _denseItemsCount;
+        }
+
         public int[] GetRawSparseItems () {
             return _sparseItems;
+        }
+
+        public int[] GetRawRecycledItems () {
+            return _recycledItems;
+        }
+
+        public ref int GetRawRecycledItemsCount () {
+            return ref _recycledItemsCount;
         }
 
         public ref T Add (int entity) {
