@@ -46,14 +46,14 @@ namespace Leopotam.EcsLite {
         T _autoresetFakeInstance;
 #endif
 
-        internal EcsPool (EcsWorld world, int id, int denseCapacity, int sparseCapacity) {
+        internal EcsPool (EcsWorld world, int id, int denseCapacity, int sparseCapacity, int recycledCapacity) {
             _type = typeof (T);
             _world = world;
             _id = id;
             _denseItems = new T[denseCapacity + 1];
             _sparseItems = new int[sparseCapacity];
             _denseItemsCount = 1;
-            _recycledItems = new int[512];
+            _recycledItems = new int[recycledCapacity];
             _recycledItemsCount = 0;
             var isAutoReset = typeof (IEcsAutoReset<T>).IsAssignableFrom (_type);
 #if DEBUG
