@@ -363,7 +363,7 @@ namespace Leopotam.EcsLite {
             return (filter, true);
         }
 
-        internal void OnEntityChange (int entity, int componentType, bool added) {
+        public void OnEntityChangeInternal (int entity, int componentType, bool added) {
             var includeList = _filtersByIncludedComponents[componentType];
             var excludeList = _filtersByExcludedComponents[componentType];
             if (added) {

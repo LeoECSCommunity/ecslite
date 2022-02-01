@@ -152,7 +152,7 @@ namespace Leopotam.EcsLite {
                 _autoReset?.Invoke (ref _denseItems[idx]);
             }
             _sparseItems[entity] = idx;
-            _world.OnEntityChange (entity, _id, true);
+            _world.OnEntityChangeInternal (entity, _id, true);
             _world.Entities[entity].ComponentsCount++;
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
             _world.RaiseEntityChangeEvent (entity);
@@ -183,7 +183,7 @@ namespace Leopotam.EcsLite {
 #endif
             ref var sparseData = ref _sparseItems[entity];
             if (sparseData > 0) {
-                _world.OnEntityChange (entity, _id, false);
+                _world.OnEntityChangeInternal (entity, _id, false);
                 if (_recycledItemsCount == _recycledItems.Length) {
                     Array.Resize (ref _recycledItems, _recycledItemsCount << 1);
                 }
