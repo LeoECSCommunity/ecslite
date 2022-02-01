@@ -228,6 +228,11 @@ namespace Leopotam.EcsLite {
             return Entities.Length;
         }
 
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public EntityData[] GetRawEntities () {
+            return Entities;
+        }
+
         public EcsPool<T> GetPool<T> () where T : struct {
             var poolType = typeof (T);
             if (_poolHashes.TryGetValue (poolType, out var rawPool)) {
@@ -546,7 +551,7 @@ namespace Leopotam.EcsLite {
             }
         }
 
-        internal struct EntityData {
+        public struct EntityData {
             public short Gen;
             public short ComponentsCount;
         }
