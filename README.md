@@ -1,7 +1,7 @@
 # LeoEcsLite - Lightweight C# Entity Component System framework
 Performance, zero/small memory allocations/footprint, no dependencies on any game engine - are the main goals of this project.
 
-> **Important!** Don't forget to use `DEBUG` builds for development and `RELEASE` builds in production: all internal error checks / exception throwing work only in `DEBUG` builds and disabled for performance reasons in `RELEASE`.
+> **Important!** Don't forget to use `DEBUG` builds for development and `RELEASE` builds in production: all internal error checks / exception throwing work only in `DEBUG` builds and removed for performance reasons in `RELEASE`.
 
 > **Important!** LeoEcsLite API **is not thread safe** and will never be! If you need multithread-processing - you should implement it on your side as part of ecs-system.
 
@@ -72,7 +72,7 @@ struct Component1 {
 Components can be added / requested / removed through [component pools](#ecspool).
 
 ## System
-Сontainer for logic for processing filtered entities. User class should implement one or multiple of: `IEcsInitSystem`, `IEcsDestroySystem`, `IEcsRunSystem` (or other supported) interfaces:
+Сontainer for logic for processing filtered entities. User class should implement at least one of `IEcsInitSystem`, `IEcsDestroySystem`, `IEcsRunSystem` (or other supported) interfaces:
 ```csharp
 class UserSystem : IEcsPreInitSystem, IEcsInitSystem, IEcsRunSystem, IEcsDestroySystem, IEcsPostDestroySystem {
     public void PreInit (EcsSystems systems) {
@@ -178,7 +178,7 @@ Additional constraints can be added with `Inc<>()` / `Exc<>()` methods.
 > Important: Filters support any amount of components, include and exclude lists should be unique. Filters can't both include and exclude the same component.
 
 ## EcsWorld
-Root level container for all entities / components, works like an isolated environment.
+Root level container for all entities / components, works like isolated environment.
 
 > Important: Do not forget to call `EcsWorld.Destroy()` method if instance will not be used anymore.
 
@@ -304,12 +304,12 @@ No personal support or any guarantees.
 
 I prefer to name them `lite` (ecs-lite) and `classic` (ecs-full). Main differences between them (based on `lite`):
 * Codebase decreased by 50% (easier to maintain and extend).
-* Zero static data in core anymore.
+* Zero static data in core.
 * No caches for components in filter (less memory consuming).
 * Fast access to any component on any entity (with performance of cached filter components in `classic`).
 * No limits to amount of filter contraints (filter is not generic class anymore).
 * Performance is similar to `classic`, maybe slightly better in some cases (worse in some corner cases on very huge amount of data).
-* Oriented around using multiple worlds at same time (can be useful to keep memory consumption low on huge amount of short living components like "events").
+* Is aimed at using multiple worlds at same time (can be useful to keep memory consumption low on huge amount of short living components like "events").
 * No reflection at runtime (can be used with aggressive code stripping).
 * No data injection through reflection by default (you can use custom shared class between systems with required data or `ecslite-di` from extension's list).
 * Entities switched back to `int` (memory consuming decreased). Saving entity as component field supported through packing to `classic` `EcsEntity`-similar struct.
