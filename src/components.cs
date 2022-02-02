@@ -166,7 +166,7 @@ namespace Leopotam.EcsLite {
             _sparseItems[entity] = idx;
             _world.OnEntityChangeInternal (entity, _id, true);
             _world.Entities[entity].ComponentsCount++;
-#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS || LEOECSLITE_WORLD_EVENTS
+#if (DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS) || LEOECSLITE_WORLD_EVENTS
             _world.RaiseEntityChangeEvent (entity);
 #endif
             return ref _denseItems[idx];
@@ -208,7 +208,7 @@ namespace Leopotam.EcsLite {
                 sparseData = 0;
                 ref var entityData = ref _world.Entities[entity];
                 entityData.ComponentsCount--;
-#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS || LEOECSLITE_WORLD_EVENTS
+#if (DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS) || LEOECSLITE_WORLD_EVENTS
                 _world.RaiseEntityChangeEvent (entity);
 #endif
                 if (entityData.ComponentsCount == 0) {
