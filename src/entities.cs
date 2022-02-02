@@ -20,7 +20,7 @@ namespace Leopotam.EcsLite {
         internal int Id;
         internal int Gen;
         internal EcsWorld World;
-#if DEBUG && !RELEASE_TEST
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
         // For using in IDE debugger.
         internal object[] DebugComponentsView {
             get {

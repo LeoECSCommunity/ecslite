@@ -56,14 +56,14 @@ namespace Leopotam.EcsLite {
             _recycledItems = new int[recycledCapacity];
             _recycledItemsCount = 0;
             var isAutoReset = typeof (IEcsAutoReset<T>).IsAssignableFrom (_type);
-#if DEBUG && !RELEASE_TEST
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (!isAutoReset && _type.GetInterface ("IEcsAutoReset`1") != null) {
                 throw new Exception ($"IEcsAutoReset should have <{typeof (T).Name}> constraint for component \"{typeof (T).Name}\".");
             }
 #endif
             if (isAutoReset) {
                 var autoResetMethod = typeof (T).GetMethod (nameof (IEcsAutoReset<T>.AutoReset));
-#if DEBUG && !RELEASE_TEST
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                 if (autoResetMethod == null) {
                     throw new Exception (
                         $"IEcsAutoReset<{typeof (T).Name}> explicit implementation not supported, use implicit instead.");
@@ -112,7 +112,7 @@ namespace Leopotam.EcsLite {
         }
 
         void IEcsPool.SetRaw (int entity, object dataRaw) {
-#if DEBUG && !RELEASE_TEST
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (dataRaw == null || dataRaw.GetType () != _type) { throw new Exception ("Invalid component data."); }
             if (_sparseItems[entity] <= 0) { throw new Exception ("Component not attached to entity."); }
 #endif
@@ -120,7 +120,7 @@ namespace Leopotam.EcsLite {
         }
 
         void IEcsPool.AddRaw (int entity, object dataRaw) {
-#if DEBUG && !RELEASE_TEST
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (dataRaw == null || dataRaw.GetType () != _type) { throw new Exception ("Invalid component data."); }
 #endif
             ref var data = ref Add (entity);
@@ -148,7 +148,7 @@ namespace Leopotam.EcsLite {
         }
 
         public ref T Add (int entity) {
-#if DEBUG && !RELEASE_TEST
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
             if (_sparseItems[entity] > 0) { throw new Exception ("Component already attached to entity."); }
 #endif
@@ -166,7 +166,7 @@ namespace Leopotam.EcsLite {
             _sparseItems[entity] = idx;
             _world.OnEntityChangeInternal (entity, _id, true);
             _world.Entities[entity].ComponentsCount++;
-#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS || LEOECSLITE_WORLD_EVENTS
             _world.RaiseEntityChangeEvent (entity);
 #endif
             return ref _denseItems[idx];
@@ -174,7 +174,7 @@ namespace Leopotam.EcsLite {
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public ref T Get (int entity) {
-#if DEBUG && !RELEASE_TEST
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
             if (_sparseItems[entity] == 0) { throw new Exception ("Not attached."); }
 #endif
@@ -183,14 +183,14 @@ namespace Leopotam.EcsLite {
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public bool Has (int entity) {
-#if DEBUG && !RELEASE_TEST
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
             return _sparseItems[entity] > 0;
         }
 
         public void Del (int entity) {
-#if DEBUG && !RELEASE_TEST
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
             ref var sparseData = ref _sparseItems[entity];
@@ -208,7 +208,7 @@ namespace Leopotam.EcsLite {
                 sparseData = 0;
                 ref var entityData = ref _world.Entities[entity];
                 entityData.ComponentsCount--;
-#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS || LEOECSLITE_WORLD_EVENTS
                 _world.RaiseEntityChangeEvent (entity);
 #endif
                 if (entityData.ComponentsCount == 0) {
