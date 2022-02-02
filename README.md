@@ -1,7 +1,7 @@
 # LeoEcsLite - Lightweight C# Entity Component System framework
-Performance, zero/small memory allocations/footprint, no dependencies on any game engine - main goals of this project.
+Performance, zero/small memory allocations/footprint, no dependencies on any game engine - are the main goals of this project.
 
-> **Important!** Don't forget to use `DEBUG` builds for development and `RELEASE` builds in production: all internal error checks / exception throwing works only in `DEBUG` builds and eleminated for performance reasons in `RELEASE`.
+> **Important!** Don't forget to use `DEBUG` builds for development and `RELEASE` builds in production: all internal error checks / exception throwing work only in `DEBUG` builds and removed for performance reasons in `RELEASE`.
 
 > **Important!** LeoEcsLite API **is not thread safe** and will never be! If you need multithread-processing - you should implement it on your side as part of ecs-system.
 
@@ -59,7 +59,7 @@ int entity = _world.NewEntity ();
 world.DelEntity (entity);
 ```
 
-> **Important!** Entities can't live without components and will be killed automatically after last component removement.
+> **Important!** Entities can't live without components and will be killed automatically after last component is removed.
 
 ## Component
 Container for user data without / with small logic inside:
@@ -72,7 +72,7 @@ struct Component1 {
 Components can be added / requested / removed through [component pools](#ecspool).
 
 ## System
-Сontainer for logic for processing filtered entities. User class should implement `IEcsInitSystem`, `IEcsDestroySystem`, `IEcsRunSystem` (or other supported) interfaces:
+Сontainer for logic for processing filtered entities. User class should implement at least one of `IEcsInitSystem`, `IEcsDestroySystem`, `IEcsRunSystem` (or other supported) interfaces:
 ```csharp
 class UserSystem : IEcsPreInitSystem, IEcsInitSystem, IEcsRunSystem, IEcsDestroySystem, IEcsPostDestroySystem {
     public void PreInit (EcsSystems systems) {
@@ -175,7 +175,7 @@ class WeaponSystem : IEcsInitSystem, IEcsRunSystem {
 
 Additional constraints can be added with `Inc<>()` / `Exc<>()` methods.
 
-> Important: Any filter supports any amount of components, include and exclude lists can't intersect and should be unique.
+> Important: Filters support any amount of components, include and exclude lists should be unique. Filters can't both include and exclude the same component.
 
 ## EcsWorld
 Root level container for all entities / components, works like isolated environment.
@@ -303,14 +303,14 @@ No personal support or any guarantees.
 ### What is the difference from Ecs-full?
 
 I prefer to name them `lite` (ecs-lite) and `classic` (ecs-full). Main differences between them (based on `lite`):
-* Codebase decreased in 2 times (easier to maintain and extend).
-* No any static data in core anymore.
+* Codebase decreased by 50% (easier to maintain and extend).
+* Zero static data in core.
 * No caches for components in filter (less memory consuming).
 * Fast access to any component on any entity (with performance of cached filter components in `classic`).
 * No limits to amount of filter contraints (filter is not generic class anymore).
 * Performance is similar to `classic`, maybe slightly better in some cases (worse in some corner cases on very huge amount of data).
-* Oriented to using multiple worlds at same time (can be useful for keep memory consuming low on huge amount of short living components like "events").
-* No reflection in runtime (can be used with aggressive code stripping).
+* Is aimed at using multiple worlds at same time (can be useful to keep memory consumption low on huge amount of short living components like "events").
+* No reflection at runtime (can be used with aggressive code stripping).
 * No data injection through reflection by default (you can use custom shared class between systems with required data or `ecslite-di` from extension's list).
 * Entities switched back to `int` (memory consuming decreased). Saving entity as component field supported through packing to `classic` `EcsEntity`-similar struct.
 * Small core, all new features can be added through extension repos.
@@ -355,7 +355,7 @@ struct MyComponent : IEcsAutoReset<MyComponent> {
 }
 ```
 This method will be automatically called for brand new component instance and after component removing from entity and before recycling to component pool.
-> Important: With custom `AutoReset` behaviour there are no any additional checks for reference-type fields, you should provide correct cleanup/init behaviour without possible memory leaks.
+> Important: With custom `AutoReset` behaviour there are no any additional checks for reference-type fields, you should provide custom correct cleanup/init behaviour to avoid possible memory leaks.
 
 ### I want to keep references to entities in components, but entity can be killed at any system and I need protection from reusing the same ID. How can I do it?
 
