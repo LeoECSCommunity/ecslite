@@ -35,18 +35,18 @@ namespace Leopotam.EcsLite {
         int _masksCount;
 
         bool _destroyed;
-#if DEBUG || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
         List<IEcsWorldEventListener> _eventListeners;
 
         public void AddEventListener (IEcsWorldEventListener listener) {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
             if (listener == null) { throw new Exception ("Listener is null."); }
 #endif
             _eventListeners.Add (listener);
         }
 
         public void RemoveEventListener (IEcsWorldEventListener listener) {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
             if (listener == null) { throw new Exception ("Listener is null."); }
 #endif
             _eventListeners.Remove (listener);
@@ -58,7 +58,7 @@ namespace Leopotam.EcsLite {
             }
         }
 #endif
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
         readonly List<int> _leakedEntities = new List<int> (512);
 
         internal bool CheckForLeakedEntities () {
@@ -99,14 +99,14 @@ namespace Leopotam.EcsLite {
             // masks.
             _masks = new Mask[64];
             _masksCount = 0;
-#if DEBUG || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
             _eventListeners = new List<IEcsWorldEventListener> (4);
 #endif
             _destroyed = false;
         }
 
         public void Destroy () {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
             if (CheckForLeakedEntities ()) { throw new Exception ($"Empty entity detected before EcsWorld.Destroy()."); }
 #endif
             _destroyed = true;
@@ -122,7 +122,7 @@ namespace Leopotam.EcsLite {
             _allFilters.Clear ();
             _filtersByIncludedComponents = Array.Empty<List<EcsFilter>> ();
             _filtersByExcludedComponents = Array.Empty<List<EcsFilter>> ();
-#if DEBUG || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
             for (var ii = _eventListeners.Count - 1; ii >= 0; ii--) {
                 _eventListeners[ii].OnWorldDestroyed (this);
             }
@@ -152,7 +152,7 @@ namespace Leopotam.EcsLite {
                     for (int i = 0, iMax = _allFilters.Count; i < iMax; i++) {
                         _allFilters[i].ResizeSparseIndex (newSize);
                     }
-#if DEBUG || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
                     for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
                         _eventListeners[ii].OnWorldResized (newSize);
                     }
@@ -161,10 +161,10 @@ namespace Leopotam.EcsLite {
                 entity = _entitiesCount++;
                 Entities[entity].Gen = 1;
             }
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
             _leakedEntities.Add (entity);
 #endif
-#if DEBUG || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
             for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
                 _eventListeners[ii].OnEntityCreated (entity);
             }
@@ -173,7 +173,7 @@ namespace Leopotam.EcsLite {
         }
 
         public void DelEntity (int entity) {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
             if (entity < 0 || entity >= _entitiesCount) {
                 throw new Exception ("Cant touch destroyed entity.");
             }
@@ -193,7 +193,7 @@ namespace Leopotam.EcsLite {
                         }
                     }
                 }
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
                 if (entityData.ComponentsCount != 0) { throw new Exception ($"Invalid components count on entity {entity} => {entityData.ComponentsCount}."); }
 #endif
                 return;
@@ -203,7 +203,7 @@ namespace Leopotam.EcsLite {
                 Array.Resize (ref _recycledEntities, _recycledEntitiesCount << 1);
             }
             _recycledEntities[_recycledEntitiesCount++] = entity;
-#if DEBUG || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
             for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
                 _eventListeners[ii].OnEntityDestroyed (entity);
             }
@@ -357,7 +357,7 @@ namespace Leopotam.EcsLite {
                     filter.AddEntity (i);
                 }
             }
-#if DEBUG || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
             for (int ii = 0, iMax = _eventListeners.Count; ii < iMax; ii++) {
                 _eventListeners[ii].OnFilterCreated (filter);
             }
@@ -373,7 +373,7 @@ namespace Leopotam.EcsLite {
                 if (includeList != null) {
                     foreach (var filter in includeList) {
                         if (IsMaskCompatible (filter.GetMask (), entity)) {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
                             if (filter.SparseEntities[entity] > 0) { throw new Exception ("Entity already in filter."); }
 #endif
                             filter.AddEntity (entity);
@@ -383,7 +383,7 @@ namespace Leopotam.EcsLite {
                 if (excludeList != null) {
                     foreach (var filter in excludeList) {
                         if (IsMaskCompatibleWithout (filter.GetMask (), entity, componentType)) {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
                             if (filter.SparseEntities[entity] == 0) { throw new Exception ("Entity not in filter."); }
 #endif
                             filter.RemoveEntity (entity);
@@ -395,7 +395,7 @@ namespace Leopotam.EcsLite {
                 if (includeList != null) {
                     foreach (var filter in includeList) {
                         if (IsMaskCompatible (filter.GetMask (), entity)) {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
                             if (filter.SparseEntities[entity] == 0) { throw new Exception ("Entity not in filter."); }
 #endif
                             filter.RemoveEntity (entity);
@@ -405,7 +405,7 @@ namespace Leopotam.EcsLite {
                 if (excludeList != null) {
                     foreach (var filter in excludeList) {
                         if (IsMaskCompatibleWithout (filter.GetMask (), entity, componentType)) {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
                             if (filter.SparseEntities[entity] > 0) { throw new Exception ("Entity already in filter."); }
 #endif
                             filter.AddEntity (entity);
@@ -474,7 +474,7 @@ namespace Leopotam.EcsLite {
             internal int IncludeCount;
             internal int ExcludeCount;
             internal int Hash;
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
             bool _built;
 #endif
 
@@ -490,7 +490,7 @@ namespace Leopotam.EcsLite {
                 IncludeCount = 0;
                 ExcludeCount = 0;
                 Hash = 0;
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
                 _built = false;
 #endif
             }
@@ -498,7 +498,7 @@ namespace Leopotam.EcsLite {
             [MethodImpl (MethodImplOptions.AggressiveInlining)]
             public Mask Inc<T> () where T : struct {
                 var poolId = _world.GetPool<T> ().GetId ();
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
                 if (_built) { throw new Exception ("Cant change built mask."); }
                 if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
                 if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
@@ -514,7 +514,7 @@ namespace Leopotam.EcsLite {
             [MethodImpl (MethodImplOptions.AggressiveInlining)]
             public Mask Exc<T> () where T : struct {
                 var poolId = _world.GetPool<T> ().GetId ();
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
                 if (_built) { throw new Exception ("Cant change built mask."); }
                 if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
                 if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
@@ -526,7 +526,7 @@ namespace Leopotam.EcsLite {
 
             [MethodImpl (MethodImplOptions.AggressiveInlining)]
             public EcsFilter End (int capacity = 512) {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
                 if (_built) { throw new Exception ("Cant change built mask."); }
                 _built = true;
 #endif
@@ -561,7 +561,7 @@ namespace Leopotam.EcsLite {
         }
     }
 
-#if DEBUG || LEOECSLITE_WORLD_EVENTS
+#if DEBUG && !RELEASE_TEST || LEOECSLITE_WORLD_EVENTS
     public interface IEcsWorldEventListener {
         void OnEntityCreated (int entity);
         void OnEntityChanged (int entity);

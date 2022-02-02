@@ -75,7 +75,7 @@ namespace Leopotam.EcsLite {
 
 #if LEOECSLITE_FILTER_EVENTS
         public void AddEventListener (IEcsFilterEventListener eventListener) {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
             for (var i = 0; i < _eventListenersCount; i++) {
                 if (_eventListeners[i] == eventListener) {
                     throw new Exception ("Listener already subscribed.");
@@ -152,7 +152,7 @@ namespace Leopotam.EcsLite {
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         void Unlock () {
-#if DEBUG
+#if DEBUG && !RELEASE_TEST
             if (_lockCount <= 0) {
                 throw new Exception ($"Invalid lock-unlock balance for \"{GetType ().Name}\".");
             }
