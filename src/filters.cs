@@ -76,11 +76,7 @@ namespace Leopotam.EcsLite {
 #if LEOECSLITE_FILTER_EVENTS
         public void AddEventListener (IEcsFilterEventListener eventListener) {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
-            for (var i = 0; i < _eventListenersCount; i++) {
-                if (_eventListeners[i] == eventListener) {
-                    throw new Exception ("Listener already subscribed.");
-                }
-            }
+            if (eventListener == null) { throw new Exception ("Listener is null."); }
 #endif
             if (_eventListeners.Length == _eventListenersCount) {
                 Array.Resize (ref _eventListeners, _eventListenersCount << 1);
@@ -153,9 +149,7 @@ namespace Leopotam.EcsLite {
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         void Unlock () {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
-            if (_lockCount <= 0) {
-                throw new Exception ($"Invalid lock-unlock balance for \"{GetType ().Name}\".");
-            }
+            if (_lockCount <= 0) { throw new Exception ($"Invalid lock-unlock balance for \"{GetType ().Name}\"."); }
 #endif
             _lockCount--;
             if (_lockCount == 0 && _delayedOpsCount > 0) {

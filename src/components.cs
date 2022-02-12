@@ -113,15 +113,15 @@ namespace Leopotam.EcsLite {
 
         void IEcsPool.SetRaw (int entity, object dataRaw) {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
-            if (dataRaw == null || dataRaw.GetType () != _type) { throw new Exception ("Invalid component data."); }
-            if (_sparseItems[entity] <= 0) { throw new Exception ("Component not attached to entity."); }
+            if (dataRaw == null || dataRaw.GetType () != _type) { throw new Exception ("Invalid component data, valid \"{typeof (T).Name}\" instance required."); }
+            if (_sparseItems[entity] <= 0) { throw new Exception ($"Component \"{typeof (T).Name}\" not attached to entity."); }
 #endif
             _denseItems[_sparseItems[entity]] = (T) dataRaw;
         }
 
         void IEcsPool.AddRaw (int entity, object dataRaw) {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
-            if (dataRaw == null || dataRaw.GetType () != _type) { throw new Exception ("Invalid component data."); }
+            if (dataRaw == null || dataRaw.GetType () != _type) { throw new Exception ("Invalid component data, valid \"{typeof (T).Name}\" instance required."); }
 #endif
             ref var data = ref Add (entity);
             data = (T) dataRaw;
@@ -150,7 +150,7 @@ namespace Leopotam.EcsLite {
         public ref T Add (int entity) {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
-            if (_sparseItems[entity] > 0) { throw new Exception ("Component already attached to entity."); }
+            if (_sparseItems[entity] > 0) { throw new Exception ($"Component \"{typeof (T).Name}\" already attached to entity."); }
 #endif
             int idx;
             if (_recycledItemsCount > 0) {
@@ -166,7 +166,7 @@ namespace Leopotam.EcsLite {
             _sparseItems[entity] = idx;
             _world.OnEntityChangeInternal (entity, _id, true);
             _world.Entities[entity].ComponentsCount++;
-#if (DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS) || LEOECSLITE_WORLD_EVENTS
+#if DEBUG || LEOECSLITE_WORLD_EVENTS
             _world.RaiseEntityChangeEvent (entity);
 #endif
             return ref _denseItems[idx];
@@ -176,7 +176,7 @@ namespace Leopotam.EcsLite {
         public ref T Get (int entity) {
 #if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (!_world.IsEntityAliveInternal (entity)) { throw new Exception ("Cant touch destroyed entity."); }
-            if (_sparseItems[entity] == 0) { throw new Exception ("Not attached."); }
+            if (_sparseItems[entity] == 0) { throw new Exception ($"Cant get \"{typeof (T).Name}\" component - not attached."); }
 #endif
             return ref _denseItems[_sparseItems[entity]];
         }
@@ -208,7 +208,7 @@ namespace Leopotam.EcsLite {
                 sparseData = 0;
                 ref var entityData = ref _world.Entities[entity];
                 entityData.ComponentsCount--;
-#if (DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS) || LEOECSLITE_WORLD_EVENTS
+#if DEBUG || LEOECSLITE_WORLD_EVENTS
                 _world.RaiseEntityChangeEvent (entity);
 #endif
                 if (entityData.ComponentsCount == 0) {
