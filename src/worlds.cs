@@ -25,6 +25,7 @@ namespace Leopotam.EcsLite {
         IEcsPool[] _pools;
         int _poolsCount;
         readonly int _poolDenseSize;
+        readonly int _poolRecycledSize;
         readonly Dictionary<Type, IEcsPool> _poolHashes;
         readonly Dictionary<int, EcsFilter> _hashedFilters;
         readonly List<EcsFilter> _allFilters;
@@ -38,14 +39,14 @@ namespace Leopotam.EcsLite {
         List<IEcsWorldEventListener> _eventListeners;
 
         public void AddEventListener (IEcsWorldEventListener listener) {
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (listener == null) { throw new Exception ("Listener is null."); }
 #endif
             _eventListeners.Add (listener);
         }
 
         public void RemoveEventListener (IEcsWorldEventListener listener) {
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (listener == null) { throw new Exception ("Listener is null."); }
 #endif
             _eventListeners.Remove (listener);
@@ -57,7 +58,7 @@ namespace Leopotam.EcsLite {
             }
         }
 #endif
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
         readonly List<int> _leakedEntities = new List<int> (512);
 
         internal bool CheckForLeakedEntities () {
@@ -88,12 +89,13 @@ namespace Leopotam.EcsLite {
             _poolHashes = new Dictionary<Type, IEcsPool> (capacity);
             _filtersByIncludedComponents = new List<EcsFilter>[capacity];
             _filtersByExcludedComponents = new List<EcsFilter>[capacity];
+            _poolDenseSize = cfg.PoolDenseSize > 0 ? cfg.PoolDenseSize : Config.PoolDenseSizeDefault;
+            _poolRecycledSize = cfg.PoolRecycledSize > 0 ? cfg.PoolRecycledSize : Config.PoolRecycledSizeDefault;
             _poolsCount = 0;
             // filters.
             capacity = cfg.Filters > 0 ? cfg.Filters : Config.FiltersDefault;
             _hashedFilters = new Dictionary<int, EcsFilter> (capacity);
             _allFilters = new List<EcsFilter> (capacity);
-            _poolDenseSize = cfg.PoolDenseSize > 0 ? cfg.PoolDenseSize : Config.PoolDenseSizeDefault;
             // masks.
             _masks = new Mask[64];
             _masksCount = 0;
@@ -104,7 +106,7 @@ namespace Leopotam.EcsLite {
         }
 
         public void Destroy () {
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             if (CheckForLeakedEntities ()) { throw new Exception ($"Empty entity detected before EcsWorld.Destroy()."); }
 #endif
             _destroyed = true;
@@ -159,7 +161,7 @@ namespace Leopotam.EcsLite {
                 entity = _entitiesCount++;
                 Entities[entity].Gen = 1;
             }
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             _leakedEntities.Add (entity);
 #endif
 #if DEBUG || LEOECSLITE_WORLD_EVENTS
@@ -171,10 +173,8 @@ namespace Leopotam.EcsLite {
         }
 
         public void DelEntity (int entity) {
-#if DEBUG
-            if (entity < 0 || entity >= _entitiesCount) {
-                throw new Exception ("Cant touch destroyed entity.");
-            }
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
+            if (entity < 0 || entity >= _entitiesCount) { throw new Exception ("Cant touch destroyed entity."); }
 #endif
             ref var entityData = ref Entities[entity];
             if (entityData.Gen < 0) {
@@ -191,7 +191,7 @@ namespace Leopotam.EcsLite {
                         }
                     }
                 }
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                 if (entityData.ComponentsCount != 0) { throw new Exception ($"Invalid components count on entity {entity} => {entityData.ComponentsCount}."); }
 #endif
                 return;
@@ -228,12 +228,17 @@ namespace Leopotam.EcsLite {
             return Entities.Length;
         }
 
+        [MethodImpl (MethodImplOptions.AggressiveInlining)]
+        public EntityData[] GetRawEntities () {
+            return Entities;
+        }
+
         public EcsPool<T> GetPool<T> () where T : struct {
             var poolType = typeof (T);
             if (_poolHashes.TryGetValue (poolType, out var rawPool)) {
                 return (EcsPool<T>) rawPool;
             }
-            var pool = new EcsPool<T> (this, _poolsCount, _poolDenseSize, Entities.Length);
+            var pool = new EcsPool<T> (this, _poolsCount, _poolDenseSize, Entities.Length, _poolRecycledSize);
             _poolHashes[poolType] = pool;
             if (_poolsCount == _pools.Length) {
                 var newSize = _poolsCount << 1;
@@ -358,7 +363,7 @@ namespace Leopotam.EcsLite {
             return (filter, true);
         }
 
-        internal void OnEntityChange (int entity, int componentType, bool added) {
+        public void OnEntityChangeInternal (int entity, int componentType, bool added) {
             var includeList = _filtersByIncludedComponents[componentType];
             var excludeList = _filtersByExcludedComponents[componentType];
             if (added) {
@@ -366,7 +371,7 @@ namespace Leopotam.EcsLite {
                 if (includeList != null) {
                     foreach (var filter in includeList) {
                         if (IsMaskCompatible (filter.GetMask (), entity)) {
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                             if (filter.SparseEntities[entity] > 0) { throw new Exception ("Entity already in filter."); }
 #endif
                             filter.AddEntity (entity);
@@ -376,7 +381,7 @@ namespace Leopotam.EcsLite {
                 if (excludeList != null) {
                     foreach (var filter in excludeList) {
                         if (IsMaskCompatibleWithout (filter.GetMask (), entity, componentType)) {
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                             if (filter.SparseEntities[entity] == 0) { throw new Exception ("Entity not in filter."); }
 #endif
                             filter.RemoveEntity (entity);
@@ -388,7 +393,7 @@ namespace Leopotam.EcsLite {
                 if (includeList != null) {
                     foreach (var filter in includeList) {
                         if (IsMaskCompatible (filter.GetMask (), entity)) {
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                             if (filter.SparseEntities[entity] == 0) { throw new Exception ("Entity not in filter."); }
 #endif
                             filter.RemoveEntity (entity);
@@ -398,7 +403,7 @@ namespace Leopotam.EcsLite {
                 if (excludeList != null) {
                     foreach (var filter in excludeList) {
                         if (IsMaskCompatibleWithout (filter.GetMask (), entity, componentType)) {
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                             if (filter.SparseEntities[entity] > 0) { throw new Exception ("Entity already in filter."); }
 #endif
                             filter.AddEntity (entity);
@@ -446,12 +451,14 @@ namespace Leopotam.EcsLite {
             public int Pools;
             public int Filters;
             public int PoolDenseSize;
+            public int PoolRecycledSize;
 
             internal const int EntitiesDefault = 512;
             internal const int RecycledEntitiesDefault = 512;
             internal const int PoolsDefault = 512;
             internal const int FiltersDefault = 512;
             internal const int PoolDenseSizeDefault = 512;
+            internal const int PoolRecycledSizeDefault = 512;
         }
 
 #if ENABLE_IL2CPP
@@ -465,7 +472,7 @@ namespace Leopotam.EcsLite {
             internal int IncludeCount;
             internal int ExcludeCount;
             internal int Hash;
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
             bool _built;
 #endif
 
@@ -481,7 +488,7 @@ namespace Leopotam.EcsLite {
                 IncludeCount = 0;
                 ExcludeCount = 0;
                 Hash = 0;
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                 _built = false;
 #endif
             }
@@ -489,7 +496,7 @@ namespace Leopotam.EcsLite {
             [MethodImpl (MethodImplOptions.AggressiveInlining)]
             public Mask Inc<T> () where T : struct {
                 var poolId = _world.GetPool<T> ().GetId ();
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                 if (_built) { throw new Exception ("Cant change built mask."); }
                 if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
                 if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
@@ -505,7 +512,7 @@ namespace Leopotam.EcsLite {
             [MethodImpl (MethodImplOptions.AggressiveInlining)]
             public Mask Exc<T> () where T : struct {
                 var poolId = _world.GetPool<T> ().GetId ();
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                 if (_built) { throw new Exception ("Cant change built mask."); }
                 if (Array.IndexOf (Include, poolId, 0, IncludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
                 if (Array.IndexOf (Exclude, poolId, 0, ExcludeCount) != -1) { throw new Exception ($"{typeof (T).Name} already in constraints list."); }
@@ -517,7 +524,7 @@ namespace Leopotam.EcsLite {
 
             [MethodImpl (MethodImplOptions.AggressiveInlining)]
             public EcsFilter End (int capacity = 512) {
-#if DEBUG
+#if DEBUG && !LEOECSLITE_NO_SANITIZE_CHECKS
                 if (_built) { throw new Exception ("Cant change built mask."); }
                 _built = true;
 #endif
@@ -546,7 +553,7 @@ namespace Leopotam.EcsLite {
             }
         }
 
-        internal struct EntityData {
+        public struct EntityData {
             public short Gen;
             public short ComponentsCount;
         }
