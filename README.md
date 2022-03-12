@@ -224,7 +224,7 @@ class Startup : MonoBehaviour {
 ## Unity
 > Tested on unity 2020.3 (but not dependent on it) and contains assembly definition for compiling to separate assembly file for performance reason.
 
-Not ready yet.
+[Unity editor integration](https://github.com/Leopotam/ecslite-unityeditor) contains code templates and world debug viewer.
 
 ## Custom engine
 > C#7.3 or above required for this framework.
