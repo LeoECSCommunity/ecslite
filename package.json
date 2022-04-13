@@ -1,10 +1,10 @@
 {
     "name": "com.leoecscommunity.ecslite",
     "author": "LeoECSCommunity",
-    "displayName": "LeoECS Lite",
-    "description": "LeoECS Lite is lightweight C# Entity Component System framework based on structs. Performance, zero/small memory allocations/footprint, no dependency on Unity engine - main goals of this project.",
+    "displayName": "LeoECSCommunity Lite",
+    "description": "LeoECSCommunity Lite is lightweight C# Entity Component System framework based on structs. Performance, zero/small memory allocations/footprint, no dependency on Unity engine - main goals of this project.",
     "unity": "2020.3",
-    "version": "1.0.0-preview",
+    "version": "0.1.0-preview",
     "keywords": [
         "leoecslite",
         "leoecs",
