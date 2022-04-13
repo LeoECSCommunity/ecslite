@@ -30,18 +30,20 @@ Performance, zero/small memory allocations/footprint, no dependencies on any gam
 * [FAQ](#faq)
 
 # Socials
-[![discord](https://img.shields.io/discord/404358247621853185.svg?label=enter%20to%20discord%20server&style=for-the-badge&logo=discord)](https://discord.gg/5GZVde6)
+[![discord](https://img.shields.io/discord/963730852452388894.svg?label=New%20Community%20Discord%20server&style=for-the-badge&logo=discord)](https://discord.gg/ZAhCUv5YQt)
+
+[![discord](https://img.shields.io/discord/404358247621853185.svg?label=Old%20Leo%20Discord%20server&style=for-the-badge&logo=discord)](https://discord.gg/5GZVde6)
 
 # Installation
 
 ## As unity module
 This repository can be installed as unity module directly from git url. In this way new line should be added to `Packages/manifest.json`:
 ```
-"com.leopotam.ecslite": "https://github.com/Leopotam/ecslite.git",
+"com.leoecscommunity.ecslite": "https://github.com/LeoECSCommunity/ecslite.git",
 ```
 By default last released version will be used. If you need trunk / developing version then `develop` name of branch should be added after hash:
 ```
-"com.leopotam.ecslite": "https://github.com/Leopotam/ecslite.git#develop",
+"com.leoecscommunity.ecslite": "https://github.com/LeoECSCommunity/ecslite.git#develop",
 ```
 
 ## As source
@@ -224,7 +226,7 @@ class Startup : MonoBehaviour {
 ## Unity
 > Tested on unity 2020.3 (but not dependent on it) and contains assembly definition for compiling to separate assembly file for performance reason.
 
-[Unity editor integration](https://github.com/Leopotam/ecslite-unityeditor) contains code templates and world debug viewer.
+[Unity editor integration](https://github.com/LeoECSCommunity/ecslite-unityeditor) contains code templates and world debug viewer.
 
 ## Custom engine
 > C#7.3 or above required for this framework.
@@ -282,13 +284,13 @@ class EcsStartup {
 * ["Busy ECS - extremely nice (and most likely slow) ECS framework"](https://github.com/kkolyan/busyecs)
 
 # Extensions
-* [Dependency injection](https://github.com/Leopotam/ecslite-di)
-* [Extended filters](https://github.com/Leopotam/ecslite-extendedfilters)
-* [Extended systems](https://github.com/Leopotam/ecslite-extendedsystems)
-* [Threads support](https://github.com/Leopotam/ecslite-threads)
-* [Unity editor integration](https://github.com/Leopotam/ecslite-unityeditor)
-* [Unity uGui bindings](https://github.com/Leopotam/ecslite-unity-ugui)
-* [Unity jobs support](https://github.com/Leopotam/ecslite-threads-unity)
+* [Dependency injection](https://github.com/LeoECSCommunity/ecslite-di)
+* [Extended filters](https://github.com/LeoECSCommunity/ecslite-extendedfilters)
+* [Extended systems](https://github.com/LeoECSCommunity/ecslite-extendedsystems)
+* [Threads support](https://github.com/LeoECSCommunity/ecslite-threads)
+* [Unity editor integration](https://github.com/LeoECSCommunity/ecslite-unityeditor)
+* [Unity uGui bindings](https://github.com/LeoECSCommunity/ecslite-unity-ugui)
+* [Unity jobs support](https://github.com/LeoECSCommunity/ecslite-threads-unity)
 * [UniLeo - Unity scene data converter](https://github.com/voody2506/UniLeo-Lite)
 * [Unity Physx events support](https://github.com/supremestranger/leoecs-lite-physics)
 * [Multiple Shared injection](https://github.com/GoodCatGames/ecslite-multiple-shared)
