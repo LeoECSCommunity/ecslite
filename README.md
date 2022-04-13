@@ -30,7 +30,7 @@ Performance, zero/small memory allocations/footprint, no dependencies on any gam
 * [FAQ](#faq)
 
 # Socials
-[![discord](https://img.shields.io/discord/404358247621853185.svg?label=New%20Community%20Discord%20server&style=for-the-badge&logo=discord)](https://discord.gg/ZAhCUv5YQt)
+[![discord](https://img.shields.io/discord/963730852452388894.svg?label=New%20Community%20Discord%20server&style=for-the-badge&logo=discord)](https://discord.gg/ZAhCUv5YQt)
 
 [![discord](https://img.shields.io/discord/404358247621853185.svg?label=Old%20Leo%20Discord%20server&style=for-the-badge&logo=discord)](https://discord.gg/5GZVde6)
 
