@@ -159,7 +159,7 @@ namespace Leopotam.EcsLite {
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public static bool EqualsTo (this in EcsPackedEntityWithWorld a, in EcsPackedEntityWithWorld b)
         {
-			return a.Equals(b);
+            return a.Equals(b);
         }
     }
 }
