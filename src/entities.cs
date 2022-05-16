@@ -4,6 +4,7 @@
 // Copyright (c) 2021-2022 Leopotam <leopotam@gmail.com>
 // ----------------------------------------------------------------------------
 
+using System;
 using System.Runtime.CompilerServices;
 
 #if ENABLE_IL2CPP
@@ -11,12 +12,36 @@ using Unity.IL2CPP.CompilerServices;
 #endif
 
 namespace Leopotam.EcsLite {
-    public struct EcsPackedEntity {
+    public struct EcsPackedEntity :IEquatable<EcsPackedEntity> {
         internal int Id;
         internal int Gen;
+
+
+        public bool Equals(EcsPackedEntity other)
+        {
+            return Id == other.Id && Gen == other.Gen;
+        }
+
+
+        public override bool Equals(object obj)
+        {
+            return obj is EcsPackedEntity other && Equals(other);
+        }
+
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Gen);
+        }
+        
+        public static bool operator ==(EcsPackedEntity left, EcsPackedEntity right) =>
+            Equals(left, right);
+
+        public static bool operator !=(EcsPackedEntity left, EcsPackedEntity right) =>
+            !Equals(left, right);
     }
 
-    public struct EcsPackedEntityWithWorld {
+    public struct EcsPackedEntityWithWorld :IEquatable<EcsPackedEntityWithWorld> {
         internal int Id;
         internal int Gen;
         internal EcsWorld World;
@@ -58,6 +83,28 @@ namespace Leopotam.EcsLite {
             return $"Entity-{Id}:{Gen} [{sb}]";
         }
 #endif
+        public bool Equals(EcsPackedEntityWithWorld other)
+        {
+            return Id == other.Id && Gen == other.Gen && Equals(World, other.World);
+        }
+
+
+        public override bool Equals(object obj)
+        {
+            return obj is EcsPackedEntityWithWorld other && Equals(other);
+        }
+
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, Gen, World);
+        }
+        
+        public static bool operator ==(EcsPackedEntityWithWorld left, EcsPackedEntityWithWorld right) =>
+            Equals(left, right);
+
+        public static bool operator !=(EcsPackedEntityWithWorld left, EcsPackedEntityWithWorld right) =>
+            !Equals(left, right);
     }
 
 #if ENABLE_IL2CPP
