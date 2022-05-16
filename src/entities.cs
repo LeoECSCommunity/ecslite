@@ -85,7 +85,7 @@ namespace Leopotam.EcsLite {
 #endif
         public bool Equals(EcsPackedEntityWithWorld other)
         {
-            return Id == other.Id && Gen == other.Gen && Equals(World, other.World);
+            return Id == other.Id && Gen == other.Gen && World == other.World;
         }
 
 
