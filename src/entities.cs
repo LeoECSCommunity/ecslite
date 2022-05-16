@@ -132,7 +132,7 @@ namespace Leopotam.EcsLite {
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
         public static bool EqualsTo (this in EcsPackedEntity a, in EcsPackedEntity b) {
-            return a.Id == b.Id && a.Gen == b.Gen;
+            return a.Equals(b);
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
@@ -157,8 +157,9 @@ namespace Leopotam.EcsLite {
         }
 
         [MethodImpl (MethodImplOptions.AggressiveInlining)]
-        public static bool EqualsTo (this in EcsPackedEntityWithWorld a, in EcsPackedEntityWithWorld b) {
-            return a.Id == b.Id && a.Gen == b.Gen && a.World == b.World;
+        public static bool EqualsTo (this in EcsPackedEntityWithWorld a, in EcsPackedEntityWithWorld b)
+        {
+			return a.Equals(b);
         }
     }
 }
