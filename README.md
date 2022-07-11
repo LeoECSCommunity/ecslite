@@ -54,6 +54,10 @@ By default last released version will be used. If you need trunk / developing ve
 ```
 "com.leoecscommunity.ecslite": "https://github.com/LeoECSCommunity/ecslite.git#develop",
 ```
+You can also insall via [OpenUPM](https://openupm.com/packages/com.leoecscommunity.ecslite/):
+```
+openupm add com.leoecscommunity.ecslite
+```
 
 ## As source
 If you can't / don't want to use unity modules, code can be cloned or downloaded as archive from `releases` page.
